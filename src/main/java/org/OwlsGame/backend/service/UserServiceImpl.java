@@ -1,121 +1,86 @@
 package org.OwlsGame.backend.service;
 
-
-import org.OwlsGame.backend.dao.UserDAO;
+import org.OwlsGame.backend.dao.UserRepository;
 import org.OwlsGame.backend.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService {
 
+    private final UserRepository userRepository;
+
     @Autowired
-    private UserDAO userDAO;
-
-    private ConcurrentHashMap<String, Integer> loginAttempts = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, Long> accountLockTime = new ConcurrentHashMap<>();
-    private static final int MAX_ATTEMPTS = 5;
-    private static final long LOCK_TIME = TimeUnit.MINUTES.toMillis(1);
-
-    @Override
-    public void createUser(User user) {
-        try {
-            userDAO.addUser(user);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
-    public User getUserByEmail(String email) {
-        User user = null;
-        try {
-            user = userDAO.getUserByEmail(email);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return user;
+    public User createUser(User user) {
+        return userRepository.save(user);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Optional<User> getUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
-        List<User> users = null;
-        try {
-            users = userDAO.getAllUsers();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return users;
+        return userRepository.findAll();
     }
 
     @Override
-    public void updateUser(User user) {
-        try {
-            userDAO.updateUser(user);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public User updateUser(User user) {
+        return userRepository.save(user);
     }
 
     @Override
-    public void deleteUserByEmail(String email) {
-        try {
-            userDAO.deleteUserByEmail(email);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
     }
 
     @Override
-    public boolean validateUser(String username, String password) {
-        if (isAccountLocked(username)) {
-            return false;
-        }
-
-        boolean isValid = false;
-        try {
-            isValid = userDAO.validateUser(username, password);
-            if (isValid) {
-                loginAttempts.remove(username);
-                accountLockTime.remove(username);
-            } else {
-                incrementLoginAttempts(username);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return isValid;
+    @Transactional(readOnly = true)
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     @Override
-    public boolean isAccountLocked(String username) {
-        if (!accountLockTime.containsKey(username)) {
-            return false;
-        }
-        long lockTime = accountLockTime.get(username);
-        if (System.currentTimeMillis() - lockTime > LOCK_TIME) {
-            accountLockTime.remove(username);
-            loginAttempts.remove(username);
-            return false;
-        }
-        return true;
+    public boolean validateCredentials(String email, String password) {
+        // 通过email查找
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.map(u -> u.getPassword().equals(password)).orElse(false);
     }
 
     @Override
-    public void unlockAccount(String username) {
-        accountLockTime.remove(username);
-        loginAttempts.remove(username);
+    public void lockAccount(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            user.setLocked(true);
+            userRepository.save(user);
+        });
     }
 
-    private void incrementLoginAttempts(String username) {
-        loginAttempts.put(username, loginAttempts.getOrDefault(username, 0) + 1);
-        if (loginAttempts.get(username) >= MAX_ATTEMPTS) {
-            accountLockTime.put(username, System.currentTimeMillis());
-        }
+    @Override
+    public void unlockAccount(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            user.setLocked(false);
+            userRepository.save(user);
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isAccountLocked(String email) {
+        return userRepository.findByEmail(email)
+                .map(User::isLocked)
+                .orElse(false);
     }
 }

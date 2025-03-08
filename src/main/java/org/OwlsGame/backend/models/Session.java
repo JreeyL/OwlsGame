@@ -1,33 +1,69 @@
 package org.OwlsGame.backend.models;
 
+import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
+@Entity
+@Table(name = "sessions")
 public class Session {
-    private String sessionId;
-    private int userId;
-    private Timestamp creationTime;
-    private Timestamp lastAccessedTime;
-    private boolean isValid;
-    private Map<String, Object> attributes;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    // Constructors
+    @Column(name = "session_id", unique = true, nullable = false)
+    private String sessionId;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
+    @Column(name = "creation_time", nullable = false)
+    private Timestamp creationTime;
+
+    @Column(name = "last_accessed_time", nullable = false)
+    private Timestamp lastAccessedTime;
+
+    @Column(name = "is_valid", nullable = false)
+    private boolean isValid;
+
+    // Map 类型的 attributes 需要特殊处理（例如存储为 JSON 字符串）
+    // 暂时标记为 @Transient（不持久化到数据库）
+    @Transient
+    private Map<String, Object> attributes = new HashMap<>();
+
+    @Column(name = "last_played_game_id")
+    private Long lastPlayedGameId;
+
+    @Column(name = "favorite_game_id")
+    private Long favoriteGameId;
+
+    @Column(name = "cumulative_score")
+    private int cumulativeScore;
+
+
+    // ----------- 构造方法 -----------
     public Session() {
-        this.attributes = new HashMap<>();
         this.isValid = true;
     }
 
-    public Session(String sessionId, int userId, Timestamp creationTime) {
+    public Session(String sessionId, Long userId, Timestamp creationTime) {
         this.sessionId = sessionId;
         this.userId = userId;
         this.creationTime = creationTime;
         this.lastAccessedTime = creationTime;
         this.isValid = true;
-        this.attributes = new HashMap<>();
     }
 
-    // Getters and Setters
+    // ----------- Getters & Setters -----------
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getSessionId() {
         return sessionId;
     }
@@ -36,11 +72,11 @@ public class Session {
         this.sessionId = sessionId;
     }
 
-    public int getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(Long userId) {
         this.userId = userId;
     }
 
@@ -64,15 +100,15 @@ public class Session {
         return isValid;
     }
 
-    public void setValid(boolean isValid) {
-        this.isValid = isValid;
+    public void setValid(boolean valid) {
+        isValid = valid;
     }
 
     public Map<String, Object> getAttributes() {
         return attributes;
     }
 
-    // Methods
+    // ----------- 业务方法 -----------
     public void invalidate() {
         this.isValid = false;
     }
@@ -88,4 +124,29 @@ public class Session {
     public void removeAttribute(String key) {
         attributes.remove(key);
     }
+
+    public Long getLastPlayedGameId() {
+        return lastPlayedGameId;
+    }
+
+    public void setLastPlayedGameId(Long lastPlayedGameId) {
+        this.lastPlayedGameId = lastPlayedGameId;
+    }
+
+    public Long getFavoriteGameId() {
+        return favoriteGameId;
+    }
+
+    public void setFavoriteGameId(Long favoriteGameId) {
+        this.favoriteGameId = favoriteGameId;
+    }
+
+    public int getCumulativeScore() {
+        return cumulativeScore;
+    }
+
+    public void setCumulativeScore(int cumulativeScore) {
+        this.cumulativeScore = cumulativeScore;
+    }
+
 }

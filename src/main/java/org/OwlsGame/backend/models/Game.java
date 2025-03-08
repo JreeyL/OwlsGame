@@ -1,27 +1,34 @@
 package org.OwlsGame.backend.models;
 
+import jakarta.persistence.*;
 
-
+@Entity
+@Table(name = "games")
 public class Game {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String name;
+
+    @Column(name = "maxScore", nullable = false)
     private int maxScore;
 
     // Constructors
     public Game() {}
 
-    public Game(int id, String name, int maxScore) {
-        this.id = id;
+    public Game(String name, int maxScore) {
         this.name = name;
         this.maxScore = maxScore;
     }
 
     // Getters and Setters
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -52,6 +59,7 @@ public class Game {
     }
 
     public void resetGame() {
+        this.maxScore = 0;
         // Logic to reset the game
     }
 }

@@ -1,96 +1,65 @@
 package org.OwlsGame.backend.service;
 
-
+import org.OwlsGame.backend.dao.ScoreRepository;
 import org.OwlsGame.backend.models.Score;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
+@Transactional
 public class ScoreServiceImpl implements ScoreService {
 
+    private final ScoreRepository scoreRepository;
+
     @Autowired
-    private ScoreDAO scoreDAO;
+    public ScoreServiceImpl(ScoreRepository scoreRepository) {
+        this.scoreRepository = scoreRepository;
+    }
 
     @Override
     public void createScore(Score score) {
-        try {
-            scoreDAO.addScore(score);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        scoreRepository.save(score);
     }
 
     @Override
-    public Score getScoreById(int id) {
-        Score score = null;
-        try {
-            score = scoreDAO.getScoreById(id);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return score;
+    public Score getScoreById(Integer id) {
+        return scoreRepository.findById(id).orElse(null);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Score> getAllScores() {
-        List<Score> scores = null;
-        try {
-            scores = scoreDAO.getAllScores();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return scores;
+        return scoreRepository.findAll();
     }
 
     @Override
     public void updateScore(Score score) {
-        try {
-            scoreDAO.updateScore(score);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        scoreRepository.save(score);
     }
 
     @Override
-    public void deleteScoreById(int id) {
-        try {
-            scoreDAO.deleteScoreById(id);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void deleteScoreById(Integer id) {
+        scoreRepository.deleteById(id);
     }
 
     @Override
-    public List<Score> getScoresByUserId(int userId) {
-        List<Score> scores = null;
-        try {
-            scores = scoreDAO.getScoresByUserId(userId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return scores;
+    @Transactional(readOnly = true)
+    public List<Score> getScoresByUserId(Integer userId) {
+        return scoreRepository.findByUserId(userId);
     }
 
     @Override
-    public List<Score> getScoresByGameId(int gameId) {
-        List<Score> scores = null;
-        try {
-            scores = scoreDAO.getScoresByGameId(gameId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return scores;
+    @Transactional(readOnly = true)
+    public List<Score> getScoresByGameId(Integer gameId) {
+        return scoreRepository.findByGameId(gameId);
     }
 
     @Override
     public void saveScore(Score score) {
-        try {
-            scoreDAO.addScore(score);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        scoreRepository.save(score);
     }
 }

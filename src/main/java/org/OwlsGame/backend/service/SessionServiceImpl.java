@@ -1,89 +1,72 @@
 package org.OwlsGame.backend.service;
 
-import org.OwlsGame.backend.dao.SessionDAO;
+import org.OwlsGame.backend.dao.SessionRepository;
 import org.OwlsGame.backend.models.Session;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
+@Service
+@Transactional
 public class SessionServiceImpl implements SessionService {
 
-    private SessionDAO sessionDAO;
+    private final SessionRepository sessionRepository;
 
-    @Override
-    public void createSession(Session session) {
-        try {
-            sessionDAO.addSession(session);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    @Autowired
+    public SessionServiceImpl(SessionRepository sessionRepository) {
+        this.sessionRepository = sessionRepository;
     }
 
     @Override
-    public Session getSessionById(int id) {
-        Session session = null;
-        try {
-            session = sessionDAO.getSessionById(id);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return session;
+    public void createSession(Session session) {
+        sessionRepository.save(session);
+    }
+
+    @Override
+    public Optional<Session> getSessionById(Long id) {
+        return sessionRepository.findById(id);
     }
 
     @Override
     public List<Session> getAllSessions() {
-        List<Session> sessions = null;
-        try {
-            sessions = sessionDAO.getAllSessions();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return sessions;
+        return sessionRepository.findAll();
     }
 
     @Override
     public void updateSession(Session session) {
-        try {
-            sessionDAO.updateSession(session);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        sessionRepository.save(session);
     }
 
     @Override
-    public void deleteSessionById(int id) {
-        try {
-            sessionDAO.deleteSessionById(id);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // Implement new methods for tracking user activities
-    @Override
-    public void trackLastPlayedGame(int sessionId, int gameId) {
-        try {
-            sessionDAO.updateLastPlayedGame(sessionId, gameId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void deleteSessionById(Long id) {
+        sessionRepository.deleteById(id);
     }
 
     @Override
-    public void trackFavoriteGame(int sessionId, int gameId) {
-        try {
-            sessionDAO.updateFavoriteGame(sessionId, gameId);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void trackLastPlayedGame(Long sessionId, Long gameId) {
+        sessionRepository.updateLastPlayedGame(sessionId, gameId);
     }
 
     @Override
-    public void updateCumulativeScore(int sessionId, int score) {
-        try {
-            sessionDAO.updateCumulativeScore(sessionId, score);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void trackFavoriteGame(Long sessionId, Long gameId) {
+        sessionRepository.updateFavoriteGame(sessionId, gameId);
+    }
+
+    @Override
+    public void updateCumulativeScore(Long sessionId, int score) {
+        sessionRepository.updateCumulativeScore(sessionId, score);
+    }
+
+    // 新增方法：根据sessionId字符串获取会话
+    public Optional<Session> findBySessionId(String sessionId) {
+        return sessionRepository.findBySessionId(sessionId);
+    }
+
+    // 新增方法：根据用户ID获取所有会话
+    public List<Session> findByUserId(Long userId) {
+        return sessionRepository.findByUserId(userId);
     }
 }

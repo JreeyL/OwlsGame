@@ -1,8 +1,6 @@
 package org.OwlsGame.backend.models;
 
-
-
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
@@ -11,7 +9,7 @@ public class Score {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id; // Unique identifier for the score record
+    private Integer id; // Unique identifier for the score record
 
     @Column(name = "user_id", nullable = false)
     private int userId; // ID of the user who achieved the score

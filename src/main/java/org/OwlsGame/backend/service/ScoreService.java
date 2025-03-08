@@ -5,13 +5,12 @@ import java.util.List;
 
 public interface ScoreService {
     void createScore(Score score);
-    Score getScoreById(int id);
+    Score getScoreById(Integer id); // 修改为Integer
     List<Score> getAllScores();
     void updateScore(Score score);
-    void deleteScoreById(int id);
-    List<Score> getScoresByUserId(int userId);
-    List<Score> getScoresByGameId(int gameId);
-
-    // New method to save score
+    void deleteScoreById(Integer id); // 修改为Integer
+    List<Score> getScoresByUserId(Integer userId); // 修改为Integer
+    List<Score> getScoresByGameId(Integer gameId); // 修改为Integer
     void saveScore(Score score);
+
 }
