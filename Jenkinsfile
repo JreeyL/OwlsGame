@@ -1,54 +1,71 @@
 pipeline {
     agent any
+
     tools {
-        jdk 'jdk17'         // 与全局工具配置中的名称一致
-        maven 'maven3.9'    // 与全局工具配置中的名称一致
+        maven 'maven-3.99'  // 确保名称与 Jenkins 全局工具一致
+        jdk 'java-23'        // 确保名称与 Jenkins 全局工具一致
     }
+
     stages {
-        // 阶段 1：拉取代码
         stage('Checkout') {
             steps {
-                checkout scm
+                git branch: 'master', url: 'https://github.com/JreeyL/OwlsGame.git'
             }
         }
 
-        // 阶段 2：编译代码
         stage('Build') {
             steps {
-                sh 'mvn clean compile'
+                sh 'mvn clean package -DskipTests'
             }
         }
 
-        // 阶段 3：运行测试并生成 JaCoCo 报告
         stage('Test') {
             steps {
                 sh 'mvn test'
-                jacoco(
-                    execPattern: 'target/jacoco.exec',
-                    classPattern: 'target/classes',
-                    sourcePattern: 'src/main/java',
-                    exclusionPattern: 'src/test*'
-                )
             }
-        }
-
-        // 阶段 4：SonarQube 分析
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {  // 与 Jenkins 中配置的 SonarQube 名称一致
-                    sh 'mvn sonar:sonar \
-                        -Dsonar.projectKey=OwlsGame \
-                        -Dsonar.java.binaries=target/classes \
-                        -Dsonar.sources=src/main/java \
-                        -Dsonar.tests=src/test/java'
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                    jacoco execPattern: '**/target/jacoco.exec'
                 }
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                // 使用 Jenkins 中配置的 SonarQube 服务器名称
+                withSonarQubeEnv('sonarqube-local') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
+
+        stage('Report') {
+            steps {
+                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                publishHTML target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'target/site/jacoco',
+                    reportFiles: 'index.html',
+                    reportName: 'JaCoCo Report'
+                ]
+            }
+        }
     }
+
+    triggers {
+        pollSCM('H 10 * * *')  // 保持或调整时间
+        githubPush()
+    }
+
     post {
-        always {
-            junit 'target/surefire-reports/**/*.xml'  // 归档 JUnit 报告
-            jacoco exclusionPattern: 'src/test*'      // 归档 JaCoCo 报告
+        success {
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
