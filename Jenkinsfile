@@ -36,7 +36,7 @@ pipeline {
 
         stage('Report') {
             steps {
-                archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
                 publishHTML target: [
                     allowMissing: false,
                     reportDir: 'target/site/jacoco',
