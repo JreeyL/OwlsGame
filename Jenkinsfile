@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven-3.99'  // 确保名称与 Jenkins 全局工具一致
-        jdk 'java-23'        // 确保名称与 Jenkins 全局工具一致
+        maven 'maven-3.99'  // matching name with Jenkins global tools
+        jdk 'java-23'       // matching name with Jenkins global tools
     }
 
     stages {
@@ -13,19 +13,13 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build & Test') {
             steps {
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                sh 'mvn test'
+                sh 'mvn clean package'
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
                     jacoco execPattern: '**/target/jacoco.exec'
                 }
             }
@@ -33,7 +27,7 @@ pipeline {
 
         stage('SonarQube Analysis') {
             steps {
-                // 使用 Jenkins 中配置的 SonarQube 服务器名称
+                // matching Jenkins config SonarQube server name
                 withSonarQubeEnv('sonarqube-local') {
                     sh 'mvn sonar:sonar'
                 }
@@ -45,8 +39,6 @@ pipeline {
                 archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
                 publishHTML target: [
                     allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
                     reportDir: 'target/site/jacoco',
                     reportFiles: 'index.html',
                     reportName: 'JaCoCo Report'
@@ -56,7 +48,7 @@ pipeline {
     }
 
     triggers {
-        pollSCM('H 10 * * *')  // 保持或调整时间
+        pollSCM('H 10 * * *')  // time is adjustable
         githubPush()
     }
 
