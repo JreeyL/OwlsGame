@@ -10,12 +10,10 @@
     <packaging>war</packaging>
 
     <properties>
-        <maven.compiler.source>23</maven.compiler.source>
-        <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
-        <surefire.version>3.2.2</surefire.version>
-        <jacoco.version>0.8.11</jacoco.version>
+        <surefire.version>3.2.3</surefire.version>
+        <jacoco.version>0.8.12</jacoco.version>
     </properties>
 
     <parent>
