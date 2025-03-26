@@ -10,7 +10,7 @@ class UserTest {
 
     @BeforeEach
     void setUp() {
-        // 测试前初始化 User 对象
+        // Initialize User object before test
         user = new User();
         user.setId(1L);
         user.setFirstname("John");
@@ -21,7 +21,7 @@ class UserTest {
     }
 
     //-------------------------
-    // 基础属性测试
+    // basic entity test
     //-------------------------
     @Test
     void testGettersAndSetters() {
@@ -35,22 +35,22 @@ class UserTest {
 
     @Test
     void testLockUser() {
-        // Given: 初始未锁定
+        // Given: Initial is not locked
         assertFalse(user.isLocked());
 
-        // When: 执行锁定
+        // When: execute lock
         user.setLocked(true);
 
-        // Then: 验证状态变化
+        // Then: verify the state changes
         assertTrue(user.isLocked());
     }
 
     //-------------------------
-    // 业务逻辑测试（示例）
+    // business logical test
     //-------------------------
     @Test
     void testFullNameConcatenation() {
-        // 假设 User 类添加了 getFullName() 方法
+        // assume User has added getFullName()
         // user.setFirstname("John");
         // user.setLastname("Doe");
         // assertEquals("John Doe", user.getFullName());
@@ -58,7 +58,7 @@ class UserTest {
 
     @Test
     void testEmailFormatValidation() {
-        // 假设 User 类添加了 isValidEmail() 方法
+        // assume User has added isValidEmail()
         // assertTrue(user.isValidEmail());
         // user.setEmail("invalid-email");
         // assertFalse(user.isValidEmail());
