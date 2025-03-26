@@ -21,6 +21,8 @@ public class User {
     private boolean locked;
 
     private String password;
+
+    @Column(unique = true)
     private String email;
 
     // Constructors
