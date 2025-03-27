@@ -18,11 +18,12 @@ public class AppContextListenerTest {
 
     private AppContextListener listener;
 
-    @Mock
-    private ServletContextEvent mockEvent;
-
+    // 只模拟ServletContext
     @Mock
     private ServletContext mockContext;
+
+    // ServletContextEvent将使用真实实例
+    private ServletContextEvent event;
 
     // For capturing System.out
     private final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -30,45 +31,50 @@ public class AppContextListenerTest {
 
     @BeforeEach
     public void setUp() {
+        // 初始化Mockito注解
         MockitoAnnotations.openMocks(this);
+
+        // 创建监听器实例
         listener = new AppContextListener();
 
-        // Setup mock behavior
-        when(mockEvent.getServletContext()).thenReturn(mockContext);
+        // 配置模拟行为
         when(mockContext.getServerInfo()).thenReturn("Test Server");
 
-        // Redirect System.out to capture output
+        // 使用模拟的ServletContext创建真实的ServletContextEvent
+        event = new ServletContextEvent(mockContext);
+
+        // 重定向System.out以捕获输出
         System.setOut(new PrintStream(outputStream));
     }
 
     @AfterEach
     public void tearDown() {
-        // Restore original System.out
+        // 恢复原始System.out
         System.setOut(originalOut);
     }
 
     @Test
     public void testContextInitialized() {
-        // Call the method to test
-        listener.contextInitialized(mockEvent);
+        // 调用测试方法
+        listener.contextInitialized(event);
 
-        // Get captured output
+        // 获取捕获的输出
         String output = outputStream.toString();
 
-        // Verify output contains expected messages
+        // 验证输出包含预期消息
         assertTrue(output.contains("=== 应用启动 ==="), "Should log application startup");
         assertTrue(output.contains("Server Info: Test Server"), "Should log server info");
     }
 
     @Test
     public void testContextDestroyed() {
-        // Call the method to test
-        listener.contextDestroyed(mockEvent);
+        // 调用测试方法
+        listener.contextDestroyed(event);
 
-        // Get captured output
+        // 获取捕获的输出
         String output = outputStream.toString();
 
-        // Verify output contains expected message
+        // 验证输出包含预期消息
         assertTrue(output.contains("=== 应用关闭 ==="), "Should log application shutdown");
     }
 }
