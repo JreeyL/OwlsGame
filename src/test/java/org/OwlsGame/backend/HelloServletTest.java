@@ -1,5 +1,6 @@
 package org.OwlsGame.backend;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,7 +46,8 @@ class HelloServletTest {
     }
 
     @Test
-    void testDoGet() throws IOException {
+    void testDoGet() throws ServletException {
+        // 移除IOException，与Servlet实现保持一致
         // Execute the doGet method
         servlet.doGet(request, response);
 
@@ -73,5 +75,22 @@ class HelloServletTest {
         WebServlet annotation = HelloServlet.class.getAnnotation(WebServlet.class);
         assertEquals("/hello", annotation.value()[0],
                 "Servlet should be mapped to /hello URL pattern");
+    }
+
+    @Test
+    void testDoGet_WithIOException() throws ServletException {
+        // 测试IOException处理情况
+        try {
+            // 模拟getWriter抛出IOException
+            when(response.getWriter()).thenThrow(new IOException("模拟IO异常"));
+
+            // 执行doGet方法 - 不应抛出异常
+            servlet.doGet(request, response);
+
+            // 验证响应状态码被设置为500
+            verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } catch (IOException e) {
+            // 设置mock时可能抛出的异常，而非servlet执行时的异常
+        }
     }
 }
