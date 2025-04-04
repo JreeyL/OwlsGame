@@ -1,17 +1,17 @@
 @charset "UTF-8";
+
 body {
-    background-image: url('https://imgur.com/UEUUu3Y.png'); /* 完整路径 */
-    height: 100%;
-    overflow: hidden;
-    background-repeat: no-repeat;
-    background-size: 50% 670px;
+    background-image: url('https://imgur.com/UEUUu3Y.png');
+    min-height: 100vh;
+    overflow-x: hidden;
     margin: 0;
     padding: 0;
-    overflow-x: hidden; /* 隐藏水平滚动条 */
+    background-repeat: no-repeat;
+    background-size: 50% 670px;
 }
 
 h2 {
-    color: rgb(0, 0, 0);
+    color: #000;
     font-family: "Segoe UI", Arial, sans-serif;
     font-weight: 400;
     font-size: 36px;
@@ -32,19 +32,19 @@ form {
 }
 
 input {
-    width: 300px; /* 增加宽度以适应较长的占位符文本 */
+    width: 300px;
     padding: 10px 15px;
     font-size: 18px;
-    border: 1px solid #ccc; /* 边框样式 */
-    border-radius: 8px; /* 圆角 */
-    background-color: rgba(250, 250, 250, 0.8); /* 调整透明度 */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* 阴影效果 */
-    text-align: center; /* 输入框内文本居中 */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: rgba(250,250,250,0.8);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    text-align: center;
 }
 
 input::placeholder {
-    color: #888; /* 更加柔和的占位符颜色 */
-    text-align: center; /* 占位符文本居中（部分浏览器支持） */
+    color: #888;
+    text-align: center;
 }
 
 button {
@@ -53,15 +53,15 @@ button {
     padding: 10px 20px;
     font-size: 18px;
     color: white;
-    background-color: #009688; /* Lime Green */
+    background-color: #009688;
     border: none;
     border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 阴影效果 */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     cursor: pointer;
 }
 
 button:hover {
-    background-color: #d91366; /* Forest Green 悬停效果 */
+    background-color: #d91366;
 }
 
 .success {
@@ -73,7 +73,7 @@ button:hover {
     border: 1px solid #388E3C;
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .failure {
@@ -85,25 +85,25 @@ button:hover {
     border: 1px solid #e61919;
     padding: 10px;
     border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .navbar {
     width: 100%;
-    overflow: visible; /* display溢出内容 */
+    overflow: visible;
     height: auto;
     display: flex;
     justify-content: space-evenly;
     flex-direction: row;
     flex-wrap: wrap;
     text-align: center;
-    box-sizing: border-box; /* 确保宽度包括内边距和边框 */
+    box-sizing: border-box;
 }
 
 .footer {
     text-align: center;
     width: 100%;
-    height: 78px; /* 固定高度 */
+    height: 78px;
     padding: 20px;
     margin-top: 20px;
     overflow: hidden;
@@ -115,7 +115,7 @@ button:hover {
     bottom: 0;
     left: 0;
     right: 0;
-    box-sizing: border-box; /* 确保宽度包括内边距和边框 */
+    box-sizing: border-box;
 }
 
 .w3-teal {
@@ -123,12 +123,10 @@ button:hover {
 }
 
 .w3-button {
-    -webkit-text-size-adjust: 100%;
     box-sizing: inherit;
     font: inherit;
     margin: 10px;
     text-transform: none;
-    -webkit-appearance: button;
     border: none;
     display: inline-block;
     padding: 8px 16px;
@@ -142,7 +140,7 @@ button:hover {
     color: #fff!important;
     background-color: #009688 !important;
     border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     font-family: Verdana, sans-serif;
     font-size: 15px;
     line-height: 1.5;
@@ -157,11 +155,10 @@ button:hover {
 }
 
 .w3-dropdown-content {
-    display: none; /* 初始状态下隐藏 */
-    position: absolute; /* 绝对定位 */
-    background-color: #f9f9f9; /* 设置背景颜色为浅灰色 */
-    min-width: 160px; /* 设置最小宽度为200像素 */
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* 添加阴影效果 */
-    z-index: 1; /* 控制元素的叠放顺序 */
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    z-index: 1;
 }
-
