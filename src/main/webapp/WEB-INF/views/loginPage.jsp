@@ -4,7 +4,7 @@
 <link type="text/css" rel="stylesheet" href="/css/loginPage.css"> <!-- 更新路径 -->
 <html>
 <head>
-    <title>Login Page</title>
+    <title>Login Page_Owlsgame</title>
 </head>
 <body>
 
