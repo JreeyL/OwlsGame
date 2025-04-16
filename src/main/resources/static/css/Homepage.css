@@ -1,0 +1,44 @@
+@charset "UTF-8";
+
+body {
+    background-image: url("static/images/Owl_logo.png");
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: black;
+}
+
+.navbar {
+    width: 100%;
+    overflow: visible;
+    height: auto;
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+    flex-wrap: wrap;
+    text-align: center;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+.w3-container {
+    text-align: center;
+}
+
+.footer {
+    text-align: center;
+    width: 100%;
+    padding: 20px 0;
+    margin-top: 40px;
+    color: white;
+    background-color: #009688;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    font-size: 16px;
+}

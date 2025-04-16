@@ -3,6 +3,7 @@ package org.OwlsGame.backend.service;
 import org.OwlsGame.backend.models.User;
 import java.util.List;
 import java.util.Optional;
+import org.OwlsGame.backend.dto.UserRegisterDto;
 
 public interface UserService {
     // 基础CRUD操作
@@ -20,4 +21,6 @@ public interface UserService {
     void lockAccount(String email);
     void unlockAccount(String email);
     boolean isAccountLocked(String email);
+
+    User registerUser(UserRegisterDto userRegisterDto);
 }

@@ -5,6 +5,7 @@ import org.OwlsGame.backend.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.OwlsGame.backend.dto.UserRegisterDto;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,7 @@ public class UserServiceImpl implements UserService {
     public boolean validateCredentials(String email, String password) {
         // 通过email查找
         Optional<User> user = userRepository.findByEmail(email);
+        // 这里直接明文比对
         return user.map(u -> u.getPassword().equals(password)).orElse(false);
     }
 
@@ -82,5 +84,22 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email)
                 .map(User::isLocked)
                 .orElse(false);
+    }
+
+    @Override
+    public User registerUser(UserRegisterDto userRegisterDto) {
+        // 邮箱查重
+        if (userRepository.findByEmail(userRegisterDto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("邮箱已被注册！");
+        }
+        // 直接明文存储密码（仅演示用！）
+        String plainPassword = userRegisterDto.getPassword();
+        User user = new User(
+                userRegisterDto.getFirstname(),
+                userRegisterDto.getLastname(),
+                plainPassword,
+                userRegisterDto.getEmail()
+        );
+        return userRepository.save(user);
     }
 }

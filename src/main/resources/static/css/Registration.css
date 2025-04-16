@@ -1,0 +1,46 @@
+@charset "UTF-8";
+
+body {
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    overflow: auto;
+}
+
+.navbar {
+    width: 100%;
+    overflow: visible;
+    height: auto;
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+    flex-wrap: wrap;
+    text-align: center;
+}
+
+.container {
+    text-align: center;
+}
+
+.container input {
+    margin-bottom: 10px;
+}
+
+a {
+    color: #d91366;
+    text-decoration: none;
+}
+
+.footer {
+    text-align: center;
+    width: 100%;
+    height: 10%;
+    padding: 20px;
+    margin-top: 20px;
+    overflow: hidden;
+    color: white;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #009688;
+}
