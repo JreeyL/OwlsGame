@@ -60,12 +60,12 @@ public class SessionServiceImpl implements SessionService {
         sessionRepository.updateCumulativeScore(sessionId, score);
     }
 
-    // 新增方法：根据sessionId字符串获取会话
+    @Override
     public Optional<Session> findBySessionId(String sessionId) {
         return sessionRepository.findBySessionId(sessionId);
     }
 
-    // 新增方法：根据用户ID获取所有会话
+    @Override
     public List<Session> findByUserId(Long userId) {
         return sessionRepository.findByUserId(userId);
     }
