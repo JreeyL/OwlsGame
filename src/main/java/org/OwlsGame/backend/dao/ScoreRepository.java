@@ -2,16 +2,29 @@ package org.OwlsGame.backend.dao;
 
 import org.OwlsGame.backend.models.Score;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
-@Repository
 public interface ScoreRepository extends JpaRepository<Score, Integer> {
 
-    // 根据用户ID查询分数记录（替代getScoresByUserId）
     List<Score> findByUserId(int userId);
 
-    // 根据游戏ID查询分数记录（替代getScoresByGameId）
     List<Score> findByGameId(int gameId);
+
+    // 历史最高分（单用户单游戏）
+    Optional<Score> findTopByUserIdAndGameIdOrderByScoreValueDesc(int userId, int gameId);
+
+    // 全部玩家某游戏的最高分排行榜（前N名，按分数降序时间升序）
+    @Query("SELECT s FROM Score s WHERE s.gameId = :gameId ORDER BY s.scoreValue DESC, s.timestamp ASC")
+    List<Score> findTopScoresByGameId(int gameId, org.springframework.data.domain.Pageable pageable);
+
+    // 某玩家玩某游戏的总时长
+    @Query("SELECT SUM(s.playTime) FROM Score s WHERE s.userId = :userId AND s.gameId = :gameId")
+    Integer getTotalPlayTimeByUserIdAndGameId(int userId, int gameId);
+
+    // 某玩家所有游戏的总时长
+    @Query("SELECT s.gameId, SUM(s.playTime) FROM Score s WHERE s.userId = :userId GROUP BY s.gameId")
+    List<Object[]> getTotalPlayTimeGroupByGameId(int userId);
 }

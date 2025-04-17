@@ -64,26 +64,35 @@ button:hover {
     background-color: #d91366;
 }
 
+/* Unified login feedback bar */
+.login-msg-bar {
+    width: 100vw;
+    max-width: 100%;
+    position: relative;
+    left: 0;
+    margin: 24px 0 0 0;
+    text-align: center;
+    font-size: 18px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-weight: bold;
+    padding: 12px 0;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+/* Success and failure keep original color scheme */
 .success {
     color: white;
-    text-align: center;
-    margin-top: 20px;
-    font-size: 18px;
     background-color: #4CAF50;
     border: 1px solid #388E3C;
-    padding: 10px;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 .failure {
     color: white;
-    text-align: center;
-    margin-top: 20px;
-    font-size: 18px;
     background-color: #f34336;
     border: 1px solid #e61919;
-    padding: 10px;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }

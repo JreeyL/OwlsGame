@@ -25,12 +25,7 @@ public class Session {
     private Timestamp lastAccessedTime;
 
     @Column(name = "is_valid", nullable = false)
-    private boolean isValid;
-
-    // Map 类型的 attributes 需要特殊处理（例如存储为 JSON 字符串）
-    // 暂时标记为 @Transient（不持久化到数据库）
-    @Transient
-    private Map<String, Object> attributes = new HashMap<>();
+    private boolean isValid = true;
 
     @Column(name = "last_played_game_id")
     private Long lastPlayedGameId;
@@ -41,11 +36,11 @@ public class Session {
     @Column(name = "cumulative_score")
     private int cumulativeScore;
 
+    // 可选：如需临时存储业务属性，但不持久化
+    @Transient
+    private Map<String, Object> attributes = new HashMap<>();
 
-    // ----------- 构造方法 -----------
-    public Session() {
-        this.isValid = true;
-    }
+    public Session() {}
 
     public Session(String sessionId, Long userId, Timestamp creationTime) {
         this.sessionId = sessionId;
@@ -56,97 +51,54 @@ public class Session {
     }
 
     // ----------- Getters & Setters -----------
-    public Long getId() {
-        return id;
-    }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Long getId() { return id; }
 
-    public String getSessionId() {
-        return sessionId;
-    }
+    public void setId(Long id) { this.id = id; }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
+    public String getSessionId() { return sessionId; }
 
-    public Long getUserId() {
-        return userId;
-    }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
+    public Long getUserId() { return userId; }
 
-    public Timestamp getCreationTime() {
-        return creationTime;
-    }
+    public void setUserId(Long userId) { this.userId = userId; }
 
-    public void setCreationTime(Timestamp creationTime) {
-        this.creationTime = creationTime;
-    }
+    public Timestamp getCreationTime() { return creationTime; }
 
-    public Timestamp getLastAccessedTime() {
-        return lastAccessedTime;
-    }
+    public void setCreationTime(Timestamp creationTime) { this.creationTime = creationTime; }
 
-    public void setLastAccessedTime(Timestamp lastAccessedTime) {
-        this.lastAccessedTime = lastAccessedTime;
-    }
+    public Timestamp getLastAccessedTime() { return lastAccessedTime; }
 
-    public boolean isValid() {
-        return isValid;
-    }
+    public void setLastAccessedTime(Timestamp lastAccessedTime) { this.lastAccessedTime = lastAccessedTime; }
 
-    public void setValid(boolean valid) {
-        isValid = valid;
-    }
+    public boolean isValid() { return isValid; }
 
-    public Map<String, Object> getAttributes() {
-        return attributes;
-    }
+    public void setValid(boolean valid) { isValid = valid; }
+
+    public Long getLastPlayedGameId() { return lastPlayedGameId; }
+
+    public void setLastPlayedGameId(Long lastPlayedGameId) { this.lastPlayedGameId = lastPlayedGameId; }
+
+    public Long getFavoriteGameId() { return favoriteGameId; }
+
+    public void setFavoriteGameId(Long favoriteGameId) { this.favoriteGameId = favoriteGameId; }
+
+    public int getCumulativeScore() { return cumulativeScore; }
+
+    public void setCumulativeScore(int cumulativeScore) { this.cumulativeScore = cumulativeScore; }
+
+    public Map<String, Object> getAttributes() { return attributes; }
+
+    public void setAttributes(Map<String, Object> attributes) { this.attributes = attributes; }
 
     // ----------- 业务方法 -----------
-    public void invalidate() {
-        this.isValid = false;
-    }
 
-    public void setAttribute(String key, Object value) {
-        attributes.put(key, value);
-    }
+    public void invalidate() { this.isValid = false; }
 
-    public Object getAttribute(String key) {
-        return attributes.get(key);
-    }
+    public void setAttribute(String key, Object value) { attributes.put(key, value); }
 
-    public void removeAttribute(String key) {
-        attributes.remove(key);
-    }
+    public Object getAttribute(String key) { return attributes.get(key); }
 
-    public Long getLastPlayedGameId() {
-        return lastPlayedGameId;
-    }
-
-    public void setLastPlayedGameId(Long lastPlayedGameId) {
-        this.lastPlayedGameId = lastPlayedGameId;
-    }
-
-    public Long getFavoriteGameId() {
-        return favoriteGameId;
-    }
-
-    public void setFavoriteGameId(Long favoriteGameId) {
-        this.favoriteGameId = favoriteGameId;
-    }
-
-    public int getCumulativeScore() {
-        return cumulativeScore;
-    }
-
-    public void setCumulativeScore(int cumulativeScore) {
-        this.cumulativeScore = cumulativeScore;
-    }
-
+    public void removeAttribute(String key) { attributes.remove(key); }
 }

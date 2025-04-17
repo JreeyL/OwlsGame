@@ -7,12 +7,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.OwlsGame.backend.dto.UserRegisterDto;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Implementation of the UserService interface.
+ * Handles user authentication, registration, lock/unlock logic, and CRUD operations.
+ */
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
+
+    private static final int MAX_ATTEMPTS = 3;
+    private static final int LOCK_MINUTES = 5;
 
     private final UserRepository userRepository;
 
@@ -21,6 +30,7 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
+    // CRUD
     @Override
     public User createUser(User user) {
         return userRepository.save(user);
@@ -48,51 +58,103 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
+    // Query
     @Override
     @Transactional(readOnly = true)
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }
 
+    // Auth
+    /**
+     * Validate user credentials and handle login attempts and lock logic.
+     */
     @Override
     public boolean validateCredentials(String email, String password) {
-        // 通过email查找
-        Optional<User> user = userRepository.findByEmail(email);
-        // 这里直接明文比对
-        return user.map(u -> u.getPassword().equals(password)).orElse(false);
+        Optional<User> optUser = userRepository.findByEmail(email);
+        if (!optUser.isPresent()) return false;
+        User user = optUser.get();
+
+        // Auto-unlock logic is handled in isAccountLocked
+        if (isAccountLocked(user)) {
+            return false;
+        }
+
+        // Plain text password comparison (for demo; use encryption in production)
+        if (user.getPassword().equals(password)) {
+            resetLoginAttempts(user);
+            return true;
+        } else {
+            increaseLoginAttempts(user);
+            if (user.getLoginAttempts() >= MAX_ATTEMPTS) {
+                lockAccount(user, LOCK_MINUTES);
+            }
+            return false;
+        }
+    }
+
+    // Login attempt management
+    @Override
+    public void increaseLoginAttempts(User user) {
+        user.setLoginAttempts(user.getLoginAttempts() + 1);
+        userRepository.save(user);
     }
 
     @Override
-    public void lockAccount(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
-            user.setLocked(true);
-            userRepository.save(user);
-        });
+    public void resetLoginAttempts(User user) {
+        user.setLoginAttempts(0);
+        user.setLockUntil(null);
+        user.setLocked(false);
+        userRepository.save(user);
     }
 
     @Override
-    public void unlockAccount(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
-            user.setLocked(false);
-            userRepository.save(user);
-        });
+    public int getLoginAttempts(User user) {
+        return user.getLoginAttempts();
     }
 
+    // Lock and unlock logic
+
     @Override
-    @Transactional(readOnly = true)
-    public boolean isAccountLocked(String email) {
-        return userRepository.findByEmail(email)
-                .map(User::isLocked)
-                .orElse(false);
+    public void lockAccount(User user, int lockMinutes) {
+        user.setLocked(true);
+        user.setLockUntil(LocalDateTime.now().plusMinutes(lockMinutes));
+        userRepository.save(user);
+    }
+
+    /**
+     * Unlock the user account and reset attempts.
+     */
+    @Override
+    public void unlockAccount(User user) {
+        user.setLocked(false);
+        user.setLockUntil(null);
+        user.setLoginAttempts(0);
+        userRepository.save(user);
+    }
+
+
+    @Override
+    public boolean isAccountLocked(User user) {
+        if (!user.isLocked()) {
+            return false;
+        }
+        if (user.getLockUntil() == null) {
+            return false;
+        }
+
+        if (user.getLockUntil().isBefore(LocalDateTime.now())) {
+            unlockAccount(user);
+            return false;
+        }
+        return true;
     }
 
     @Override
     public User registerUser(UserRegisterDto userRegisterDto) {
-        // 邮箱查重
         if (userRepository.findByEmail(userRegisterDto.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("邮箱已被注册！");
+            throw new IllegalArgumentException("Email is already registered.");
         }
-        // 直接明文存储密码（仅演示用！）
         String plainPassword = userRegisterDto.getPassword();
         User user = new User(
                 userRegisterDto.getFirstname(),
@@ -100,6 +162,21 @@ public class UserServiceImpl implements UserService {
                 plainPassword,
                 userRegisterDto.getEmail()
         );
+        user.setLoginAttempts(0);
+        user.setLocked(false);
+        user.setLockUntil(null);
         return userRepository.save(user);
+    }
+
+    @Override
+    public User login(String email, String password) {
+        Optional<User> optUser = userRepository.findByEmail(email);
+        if (optUser.isPresent()) {
+            User user = optUser.get();
+            if (validateCredentials(email, password)) {
+                return user;
+            }
+        }
+        return null;
     }
 }
