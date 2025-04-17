@@ -6,21 +6,32 @@ import java.util.Optional;
 import org.OwlsGame.backend.dto.UserRegisterDto;
 
 public interface UserService {
-    // 基础CRUD操作
+    // CRUD
     User createUser(User user);
     Optional<User> getUserById(Long id);
     List<User> getAllUsers();
     User updateUser(User user);
     void deleteUser(Long id);
 
-    // 扩展查询方法
+    // Query
     Optional<User> getUserByEmail(String email);
 
-    // 安全验证方法
+    // Auth
     boolean validateCredentials(String email, String password);
-    void lockAccount(String email);
-    void unlockAccount(String email);
-    boolean isAccountLocked(String email);
+
+    // Login attempts & lock
+    void increaseLoginAttempts(User user);
+    void resetLoginAttempts(User user);
+    int getLoginAttempts(User user);
+
+    void lockAccount(User user, int lockMinutes);
+    void unlockAccount(User user);
+    boolean isAccountLocked(User user);
 
     User registerUser(UserRegisterDto userRegisterDto);
+
+    /**
+     * 登录方法，返回User，如果失败返回null
+     */
+    User login(String email, String password);
 }

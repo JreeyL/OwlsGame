@@ -11,11 +11,6 @@ public class HomeController {
         return "Homepage";
     }
 
-    @GetMapping("/login")
-    public String showLoginPage() {
-        return "loginPage";
-    }
-
     // 不要再有 @GetMapping("/usersRegister")，否则会冲突！
 
     @GetMapping("/TofGame")

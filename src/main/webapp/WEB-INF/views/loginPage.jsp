@@ -8,6 +8,8 @@
 </head>
 <body>
 
+<%@ include file="userStatus.jspf" %>
+
 <nav class="navbar w3-teal">
     <img src="${pageContext.request.contextPath}/images/Owl_logo.png" alt="Owl Logo" width="50" height="50">
     <a href="${pageContext.request.contextPath}/home" class="w3-button w3-teal w3-hover-pink">Home</a>
@@ -27,10 +29,10 @@
 <h2>Login</h2>
 <form method="post" action="${pageContext.request.contextPath}/login">
     <div class="input-container">
-        <input type="text" id="username" name="username" required placeholder="Please enter the Username">
+        <input type="text" id="email" name="email" value="${userLoginDto.email}" required placeholder="Please enter your Email">
     </div>
     <div class="input-container">
-        <input type="password" id="password" name="password" required placeholder="Please enter the Password">
+        <input type="password" id="password" name="password" value="${userLoginDto.password}" required placeholder="Please enter your Password">
     </div>
     <div class="button-container">
         <button type="submit">Login</button>
@@ -38,19 +40,19 @@
     </div>
 </form>
 
-<%-- 显示登录结果消息 --%>
+<%-- Feedback message bar --%>
 <%
     String message = (String) request.getAttribute("message");
-    if (message != null) {
-        String messageType = (String) request.getAttribute("messageType");
+    String messageType = (String) request.getAttribute("messageType"); // "success" or "failure"
+    if (message != null && messageType != null) {
 %>
-<p class='<%= messageType %>'><%= message %></p>
+<div class="login-msg-bar <%= messageType %>"><%= message %></div>
 <%
     }
 %>
+
 <footer class="footer w3-teal">
     <p>Owls games</p>
 </footer>
-
 </body>
 </html>

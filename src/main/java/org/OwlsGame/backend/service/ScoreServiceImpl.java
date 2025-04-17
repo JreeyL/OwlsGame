@@ -3,6 +3,7 @@ package org.OwlsGame.backend.service;
 import org.OwlsGame.backend.dao.ScoreRepository;
 import org.OwlsGame.backend.models.Score;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +57,30 @@ public class ScoreServiceImpl implements ScoreService {
     @Transactional(readOnly = true)
     public List<Score> getScoresByGameId(Integer gameId) {
         return scoreRepository.findByGameId(gameId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Score> getHighestScoreByUserAndGame(Integer userId, Integer gameId) {
+        return scoreRepository.findTopByUserIdAndGameIdOrderByScoreValueDesc(userId, gameId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Score> getTopNScoresByGame(Integer gameId, int n) {
+        return scoreRepository.findTopScoresByGameId(gameId, PageRequest.of(0, n));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getTotalPlayTimeByUserAndGame(Integer userId, Integer gameId) {
+        return scoreRepository.getTotalPlayTimeByUserIdAndGameId(userId, gameId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Object[]> getTotalPlayTimeGroupByGame(Integer userId) {
+        return scoreRepository.getTotalPlayTimeGroupByGameId(userId);
     }
 
     @Override

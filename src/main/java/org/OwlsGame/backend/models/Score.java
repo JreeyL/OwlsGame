@@ -9,25 +9,25 @@ public class Score {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id; // Unique identifier for the score record
+    private Integer id;
 
     @Column(name = "user_id", nullable = false)
-    private int userId; // ID of the user who achieved the score
+    private int userId;
 
     @Column(name = "game_id", nullable = false)
-    private int gameId; // ID of the game for which the score was achieved
+    private int gameId;
 
     @Column(name = "score_value", nullable = false)
-    private int scoreValue; // The actual score value achieved
+    private int scoreValue;
 
     @Column(name = "timestamp", nullable = false)
-    private Timestamp timestamp; // The time when the score was recorded
+    private Timestamp timestamp;
 
     @Column(name = "email", nullable = false)
-    private String email; // Email of the user who achieved the score
+    private String email;
 
     @Column(name = "play_time", nullable = false)
-    private int playTime; // The play time for the game
+    private int playTime; // 单位：秒
 
     // Constructors
     public Score() {}
@@ -42,58 +42,45 @@ public class Score {
     }
 
     // Getters and Setters
-    public int getId() {
+    public Integer getId() {
         return id;
     }
-
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
-
     public int getUserId() {
         return userId;
     }
-
     public void setUserId(int userId) {
         this.userId = userId;
     }
-
     public int getGameId() {
         return gameId;
     }
-
     public void setGameId(int gameId) {
         this.gameId = gameId;
     }
-
     public int getScoreValue() {
         return scoreValue;
     }
-
     public void setScoreValue(int scoreValue) {
         this.scoreValue = scoreValue;
     }
-
     public Timestamp getTimestamp() {
         return timestamp;
     }
-
     public void setTimestamp(Timestamp timestamp) {
         this.timestamp = timestamp;
     }
-
     public String getEmail() {
         return email;
     }
-
     public void setEmail(String email) {
         this.email = email;
     }
-
     public int getPlayTime() {
         return playTime;
     }
-
     public void setPlayTime(int playTime) {
         this.playTime = playTime;
     }
