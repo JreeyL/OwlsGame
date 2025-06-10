@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <title>New Password</title>
+</head>
+<body>
+<br>
+<div class="w3-painel w3-sans-serif w3-center w3-xxlarge w3-animate-fading">Change your Password</div>
+<form class="w3-padding-32">
+  <div class="w3-painel w3-center w3-white w3-padding-32 w3-round-large">
+    <br>
+    <label for="otpcode" class="w3-painel w3-center w3-medium">OTP Code</label>
+    <br>
+    <br>
+    <input type="number" id="otpcode" class="w3-painel w3-center w3-medium w3-round-large w3-padding-large w3-round-xlarge" placeholder="Insert your code" required>
+    <br>
+    <br>
+    <label for="password" class="w3-painel w3-center w3-medium">New Password</label>
+    <br>
+    <br>
+    <input class="w3-painel w3-center w3-medium w3-round-large w3-padding-large w3-round-xlarge" placeholder="Insert your pasword" type="password" id="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" maxlength = '8'
+           title="Must contain at least one number and one uppercase and lowercase letter, and must be least 8 characters" required>
+    <br>
+    <br>
+    <label for="rep_password" class="w3-painel w3-center w3-medium">Repeat Password</label>
+    <br>
+    <br>
+    <input class="w3-painel w3-center w3-medium w3-round-large w3-padding-large w3-round-xlarge" placeholder="re-enter your password" type="password" id="rep_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" maxlength = '8'
+           title="Must contain at least one number and one uppercase and lowercase letter, and must be least 8 characters" required>
+    <br>
+    <br>
+    <br>
+    <input type="submit" formaction="LoginPage.jsp"value="SUBMIT" class="w3-btn w3-green w3-round-xlarge w3-large">
+    <br>
+  </div>
+</form>
+</body>
+<footer>
+  <p class="w3-painel w3-center w3-teal w3-medium"> Created by Owls Games - 2024</p>
+</footer>
+</html>
