@@ -25,9 +25,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
+    // TODO: 添加密码加密器组件，目前使用明文存储
+    // 后续需要引入Spring Security并配置PasswordEncoder
+    // private final PasswordEncoder passwordEncoder;
+
     @Autowired
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
+        // this.passwordEncoder = passwordEncoder;
     }
 
     // CRUD
@@ -178,5 +183,40 @@ public class UserServiceImpl implements UserService {
             }
         }
         return null;
+    }
+
+    /**
+     * 重置用户密码
+     *
+     * @param email 用户邮箱
+     * @param newPassword 新密码
+     * @return 密码重置是否成功
+     */
+    @Override
+    @Transactional
+    public boolean resetPassword(String email, String newPassword) {
+        Optional<User> userOptional = getUserByEmail(email);
+
+        if (userOptional.isEmpty()) {
+            return false;
+        }
+
+        User user = userOptional.get();
+
+        // TODO: 在此处使用密码加密器加密密码
+        // 目前使用明文存储密码，后续应修改为加密存储
+        // String encodedPassword = passwordEncoder.encode(newPassword);
+        // user.setPassword(encodedPassword);
+
+        // 现在使用明文存储
+        user.setPassword(newPassword);
+
+        // 重置登录尝试次数和锁定状态
+        user.setLoginAttempts(0);
+        user.setLocked(false);
+        user.setLockUntil(null);
+
+        userRepository.save(user);
+        return true;
     }
 }
