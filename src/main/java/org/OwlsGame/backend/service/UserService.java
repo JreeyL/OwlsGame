@@ -34,4 +34,12 @@ public interface UserService {
      * 登录方法，返回User，如果失败返回null
      */
     User login(String email, String password);
+
+    /**
+     * 重置用户密码
+     * @param email 用户邮箱
+     * @param newPassword 新密码
+     * @return 密码重置是否成功
+     */
+    boolean resetPassword(String email, String newPassword);
 }

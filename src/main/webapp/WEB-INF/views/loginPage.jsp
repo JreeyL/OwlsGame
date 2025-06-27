@@ -51,6 +51,12 @@
     }
 %>
 
+<% if(request.getParameter("resetSuccess") != null) { %>
+<div class="w3-panel w3-green w3-round-large w3-center">
+    <p><%= request.getParameter("resetSuccess") %></p>
+</div>
+<% } %>
+
 <footer class="footer w3-teal">
     <p>Owls games</p>
 </footer>

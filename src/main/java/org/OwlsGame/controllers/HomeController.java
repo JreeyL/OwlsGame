@@ -8,18 +8,17 @@ public class HomeController {
 
     @GetMapping({"/", "/home"})
     public String showHome() {
-        return "Homepage";
+        // 明确指定扩展名
+        return "Homepage.jsp"; // 或 "Homepage.html"
     }
-
-    // 不要再有 @GetMapping("/usersRegister")，否则会冲突！
 
     @GetMapping("/TofGame")
     public String showTofGame() {
-        return "TofGame";
+        return "TofGame.jsp"; // 或 "TofGame.html"
     }
 
     @GetMapping("/leaderboard")
     public String showLeaderboard() {
-        return "leaderboard";
+        return "leaderboard.jsp"; // 或 "leaderboard.html"
     }
 }
