@@ -28,7 +28,7 @@ public class UserController {
     @GetMapping("/usersRegister")
     public String showRegisterPage(Model model) {
         model.addAttribute("userRegisterDto", new UserRegisterDto());
-        return "usersRegister";
+        return "usersRegister.jsp"; // 添加文件扩展名
     }
 
     // POST - Handle registration
@@ -40,14 +40,14 @@ public class UserController {
             return "redirect:/userDetails";
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
-            return "usersRegister";
+            return "usersRegister.jsp"; // 添加文件扩展名
         }
     }
 
     // GET - Show registration success page
     @GetMapping("/userDetails")
     public String showUserDetailsPage() {
-        return "userDetails";
+        return "userDetails.jsp"; // 添加文件扩展名
     }
 
     // -------------------- Login Section --------------------
@@ -58,7 +58,7 @@ public class UserController {
         model.addAttribute("userLoginDto", new UserLoginDto());
         model.addAttribute("message", null);
         model.addAttribute("messageType", null);
-        return "loginPage";
+        return "loginPage.jsp"; // 添加文件扩展名，并注意文件名可能大写开头
     }
 
     // POST - Handle login
@@ -77,7 +77,7 @@ public class UserController {
             model.addAttribute("userLoginDto", userLoginDto);
             model.addAttribute("message", "Incorrect email or password. You have " + maxAttempts + " attempts remaining.");
             model.addAttribute("messageType", "failure");
-            return "loginPage";
+            return "loginPage.jsp"; // 添加文件扩展名，并注意文件名可能大写开头
         }
 
         // Check if the account is locked (auto-unlock handled in service)
@@ -85,7 +85,7 @@ public class UserController {
             model.addAttribute("userLoginDto", userLoginDto);
             model.addAttribute("message", "Your account has been locked. Please try again after 5 minutes.");
             model.addAttribute("messageType", "failure");
-            return "loginPage";
+            return "loginPage.jsp"; // 添加文件扩展名，并注意文件名可能大写开头
         }
 
         if (userService.validateCredentials(email, password)) {
@@ -114,7 +114,7 @@ public class UserController {
                 model.addAttribute("message", "Incorrect email or password. You have " + leftAttempts + " attempts remaining.");
             }
             model.addAttribute("messageType", "failure");
-            return "loginPage";
+            return "loginPage.jsp"; // 添加文件扩展名，并注意文件名可能大写开头
         }
     }
 
@@ -127,7 +127,7 @@ public class UserController {
             return "redirect:/login";
         }
         model.addAttribute("user", user);
-        return "Homepage"; // Must match JSP filename exactly
+        return "Homepage.jsp"; // 添加文件扩展名
     }
 
     // GET - Logout
