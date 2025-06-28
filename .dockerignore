@@ -1,0 +1,31 @@
+# Maven 构建目录（除了 target/*.war）
+target/classes/
+target/generated-sources/
+target/maven-archiver/
+target/maven-status/
+target/surefire-reports/
+target/test-classes/
+
+# Git 目录
+.git/
+.github/
+.gitignore
+
+# IDE 配置
+.idea/
+*.iml
+.vscode/
+*.sublime*
+.project
+.classpath
+.settings/
+
+# 日志文件
+*.log
+logs/
+
+# 其他不需要的文件
+README.md
+LICENSE
+Jenkinsfile
+docker-compose.yml

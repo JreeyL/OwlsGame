@@ -2,62 +2,84 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven-3.99'  // matching name with Jenkins global tools
-        jdk 'java-21'       // matching name with Jenkins global tools
+        maven 'maven'
+        jdk 'jdk21'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/JreeyL/OwlsGame.git'
+                checkout scm
             }
         }
 
-        stage('Build & Test') {
+        stage('Build') {
             steps {
-                sh 'mvn clean verify'
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-                    jacoco execPattern: '**/target/jacoco.exec'
+                    junit '**/target/surefire-reports/TEST-*.xml'
                 }
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                // matching Jenkins config SonarQube server name
-                withSonarQubeEnv('sonarqube-local') {
+                withSonarQubeEnv('SonarQube') {
                     sh 'mvn sonar:sonar'
                 }
             }
         }
 
-        stage('Report') {
+        stage('Docker Build') {
             steps {
-                archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
-                publishHTML target: [
-                    allowMissing: false,
-                    reportDir: 'target/site/jacoco',
-                    reportFiles: 'index.html',
-                    reportName: 'JaCoCo Report'
-                ]
+                sh 'docker build -t owlsgame:${BUILD_NUMBER} .'
+                sh 'docker tag owlsgame:${BUILD_NUMBER} owlsgame:latest'
+            }
+        }
+
+        stage('Docker Push') {
+            when {
+                branch 'main'
+            }
+            steps {
+                // Docker Hub push example code commented out
+                echo "Image built successfully: owlsgame:${BUILD_NUMBER}"
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                sh 'docker stop owlsgame-container || true'
+                sh 'docker rm owlsgame-container || true'
+                sh 'docker run -d -p 9090:8080 --name owlsgame-container -e SPRING_PROFILES_ACTIVE=prod owlsgame:latest'
             }
         }
     }
 
-    triggers {
-        pollSCM('H 10 * * *')  // time is adjustable
-        githubPush()
-    }
-
     post {
         success {
-            echo 'Pipeline succeeded!'
+            echo 'Build successful!'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Build failed!'
+        }
+        always {
+            // Clean up old Docker images (keeping the 5 most recent)
+            sh '''
+                docker image prune -f
+                docker images "owlsgame" --format "{{.ID}}" | sort | head -n -5 | xargs -r docker rmi -f
+            '''
         }
     }
 }
