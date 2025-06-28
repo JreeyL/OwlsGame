@@ -26,16 +26,30 @@ class HomeControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    void home_ShouldReturnLoginPage() throws Exception {
+    void showHome_ShouldReturnHomepage() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("loginPage"));
+                .andExpect(view().name("Homepage.jsp"));
     }
 
     @Test
-    void showHomePage_ShouldReturnLoginPage() throws Exception {
+    void showHome_WithHomeURL_ShouldReturnHomepage() throws Exception {
         mockMvc.perform(get("/home"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("loginPage"));
+                .andExpect(view().name("Homepage.jsp"));
+    }
+
+    @Test
+    void showTofGame_ShouldReturnTofGamePage() throws Exception {
+        mockMvc.perform(get("/TofGame"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("TofGame.jsp"));
+    }
+
+    @Test
+    void showLeaderboard_ShouldReturnLeaderboardPage() throws Exception {
+        mockMvc.perform(get("/leaderboard"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("leaderboard.jsp"));
     }
 }
