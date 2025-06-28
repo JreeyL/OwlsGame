@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: owls-game-app
+    ports:
+      - "9090:8080"  # 注意：Tomcat 在容器内默认使用8080端口，映射到主机的9090端口
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/owlsgame_db?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=RootRoot##
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    depends_on:
+      - db
+    networks:
+      - owlsgame-network
+    restart: unless-stopped
+
+  db:
+    image: mysql:8
+    container_name: owlsgame-db
+    environment:
+      - MYSQL_DATABASE=owlsgame_db
+      - MYSQL_ROOT_PASSWORD=RootRoot##
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - owlsgame-network
+    restart: unless-stopped
+
+networks:
+  owlsgame-network:
+    driver: bridge
+
+volumes:
+  db-data:
