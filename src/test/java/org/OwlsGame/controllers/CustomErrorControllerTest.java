@@ -27,7 +27,7 @@ class CustomErrorControllerTest {
     }
 
     @Test
-    void handleError_Should_Return404Page_When_StatusIs404() {
+    void handleError_Should_RedirectTo404Page_When_StatusIs404() {
         // Arrange
         when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(404);
 
@@ -35,11 +35,12 @@ class CustomErrorControllerTest {
         String viewName = errorController.handleError(request);
 
         // Assert
-        assertEquals("error/404", viewName, "Should return 404 error page for 404 status code");
+        assertEquals("redirect:/static/error/404.html", viewName,
+                "Should redirect to 404 error page for 404 status code");
     }
 
     @Test
-    void handleError_Should_Return500Page_When_StatusIs500() {
+    void handleError_Should_RedirectTo500Page_When_StatusIs500() {
         // Arrange
         when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(500);
 
@@ -47,11 +48,12 @@ class CustomErrorControllerTest {
         String viewName = errorController.handleError(request);
 
         // Assert
-        assertEquals("error/500", viewName, "Should return 500 error page for 500 status code");
+        assertEquals("redirect:/static/error/500.html", viewName,
+                "Should redirect to 500 error page for 500 status code");
     }
 
     @Test
-    void handleError_Should_Return500Page_When_StatusIs403() {
+    void handleError_Should_RedirectTo500Page_When_StatusIs403() {
         // Arrange
         when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(403);
 
@@ -59,11 +61,12 @@ class CustomErrorControllerTest {
         String viewName = errorController.handleError(request);
 
         // Assert
-        assertEquals("error/500", viewName, "Should return 500 error page for other status codes");
+        assertEquals("redirect:/static/error/500.html", viewName,
+                "Should redirect to 500 error page for other status codes");
     }
 
     @Test
-    void handleError_Should_Return500Page_When_StatusIsNull() {
+    void handleError_Should_RedirectTo500Page_When_StatusIsNull() {
         // Arrange
         when(request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE)).thenReturn(null);
 
@@ -71,6 +74,7 @@ class CustomErrorControllerTest {
         String viewName = errorController.handleError(request);
 
         // Assert
-        assertEquals("error/500", viewName, "Should return 500 error page when status is null");
+        assertEquals("redirect:/static/error/500.html", viewName,
+                "Should redirect to 500 error page when status is null");
     }
 }
