@@ -1,19 +1,24 @@
-version: '3.8'
 
 services:
   app:
     build: .
     container_name: owls-game-app
     ports:
-      - "9090:8080"  # 注意：Tomcat 在容器内默认使用8080端口，映射到主机的9090端口
+      # 将您电脑的 9090 端口映射到容器内 Tomcat 的 8080 端口
+      - "9090:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/owlsgame_db?useSSL=false&allowPublicKeyRetrieval=true
+      # 数据库连接信息，主机名 'db' 会被 Docker 解析为 db 容器的地址
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/owlsgame_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=root
       - SPRING_DATASOURCE_PASSWORD=RootRoot##
-      - JAVA_OPTS=-Xms256m -Xmx512m
+      # 可选：明确告知 Spring/Hibernate 使用哪种 SQL 方言，增加稳定性
+      - SPRING_JPA_DATABASE-PLATFORM=org.hibernate.dialect.MySQLDialect
     depends_on:
-      - db
+      # 依赖于 db 服务
+      db:
+        # 并且必须等到 db 服务的健康检查状态变为 'healthy' 后才启动
+        condition: service_healthy
     networks:
       - owlsgame-network
     restart: unless-stopped
@@ -22,19 +27,30 @@ services:
     image: mysql:8
     container_name: owlsgame-db
     environment:
+      # 这两个变量会让 MySQL 容器在首次启动时自动创建数据库和设置密码
       - MYSQL_DATABASE=owlsgame_db
       - MYSQL_ROOT_PASSWORD=RootRoot##
+    # 健康检查：Docker 会用这个命令定期检查数据库是否真的准备好了
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-pRootRoot##"] # 加上密码
+      timeout: 20s
+      retries: 10
+      start_period: 30s # 给予容器30秒的启动时间
     volumes:
+      # 将数据库数据持久化到名为 'db-data' 的 Docker 卷中
       - db-data:/var/lib/mysql
     ports:
+      # 将数据库的 3306 端口映射到电脑的 3307 端口，方便外部工具连接
       - "3307:3306"
     networks:
       - owlsgame-network
     restart: unless-stopped
 
+# 定义网络，让 app 和 db 可以互相通信
 networks:
   owlsgame-network:
     driver: bridge
 
+# 定义数据卷，用于持久化存储
 volumes:
   db-data:
