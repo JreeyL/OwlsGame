@@ -44,9 +44,9 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat 'docker stop owlsgame-container || exit 0'  // Windows 错误处理
-                bat 'docker rm owlsgame-container || exit 0'
-                bat 'docker run -d -p 9090:8080 --name owlsgame-container -e SPRING_PROFILES_ACTIVE=prod owlsgame:latest'
+                // 直接使用 docker-compose 文件来部署，网络问题自动解决
+                bat 'docker-compose down || exit 0'
+                bat 'docker-compose up -d --build'
             }
         }
 
