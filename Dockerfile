@@ -1,21 +1,14 @@
-# 使用 Tomcat 10.1 作为基础镜像，兼容 Jakarta EE 9+
+# 使用与本地环境兼容的 Tomcat 版本
 FROM tomcat:10.1-jdk21-temurin-jammy
 
-# 删除默认的 Tomcat 应用
+# 删除 Tomcat 默认的欢迎页面等内容
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# 设置工作目录
-WORKDIR /usr/local/tomcat
-
-# 复制 WAR 文件到 Tomcat webapps 目录
+# 将WAR 文件复制到 Tomcat 的 webapps 目录下，并重命名为 ROOT.war
 COPY target/*.war /usr/local/tomcat/webapps/ROOT.war
 
-# 设置环境变量
-ENV SPRING_PROFILES_ACTIVE=prod
-ENV JAVA_OPTS="-Xms256m -Xmx512m"
+# 声明容器内部实际监听的端口，这是 Tomcat 的默认端口
+EXPOSE 8080
 
-# 暴露端口（使用您的实际配置端口）
-EXPOSE 9090
-
-# 启动 Tomcat
+# 启动 Tomcat 服务器
 CMD ["catalina.sh", "run"]
