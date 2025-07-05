@@ -2,6 +2,7 @@
 services:
   app:
     build: .
+    image: jiyuli/owlsgame:latest
     container_name: owls-game-app
     ports:
       # 将您电脑的 9090 端口映射到容器内 Tomcat 的 8080 端口
