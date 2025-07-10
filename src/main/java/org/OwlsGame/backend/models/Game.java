@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "games")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class Game {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,11 +25,11 @@ public class Game {
     }
 
     // Getters and Setters
-    public long getId() {
+    public Long getId() { // <--- 注意这里类型是Long
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) { // <--- 注意这里类型是Long
         this.id = id;
     }
 

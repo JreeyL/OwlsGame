@@ -12,11 +12,6 @@ public class HomeController {
         return "Homepage.jsp"; // 或 "Homepage.html"
     }
 
-    @GetMapping("/TofGame")
-    public String showTofGame() {
-        return "TofGame.jsp"; // 或 "TofGame.html"
-    }
-
     @GetMapping("/leaderboard")
     public String showLeaderboard() {
         return "leaderboard.jsp"; // 或 "leaderboard.html"

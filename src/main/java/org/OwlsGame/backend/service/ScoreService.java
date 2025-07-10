@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ScoreService {
-    void createScore(Score score);
+    Score saveScore(Score score);
     Score getScoreById(Integer id);
     List<Score> getAllScores();
-    void updateScore(Score score);
     void deleteScoreById(Integer id);
     List<Score> getScoresByUserId(Integer userId);
     List<Score> getScoresByGameId(Integer gameId);
@@ -17,6 +16,4 @@ public interface ScoreService {
     List<Score> getTopNScoresByGame(Integer gameId, int n);
     Integer getTotalPlayTimeByUserAndGame(Integer userId, Integer gameId);
     List<Object[]> getTotalPlayTimeGroupByGame(Integer userId);
-
-    void saveScore(Score score);
 }
