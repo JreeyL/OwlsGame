@@ -8,13 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
 
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -37,7 +35,6 @@ public class ScoreServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        // 创建测试用的分数对象
         Timestamp now = Timestamp.from(Instant.now());
 
         testScore = new Score(userId, gameId, 100, now, "user@example.com", 60);
@@ -48,26 +45,21 @@ public class ScoreServiceImplTest {
     }
 
     @Test
-    void whenCreateScore_thenScoreRepositorySaveIsCalled() {
-        // given
+    void whenSaveScore_thenRepositorySaveIsCalled() {
         when(scoreRepository.save(any(Score.class))).thenReturn(testScore);
 
-        // when
-        scoreService.createScore(testScore);
+        Score result = scoreService.saveScore(testScore);
 
-        // then
         verify(scoreRepository, times(1)).save(testScore);
+        assertEquals(testScore, result);
     }
 
     @Test
     void whenGetScoreById_thenReturnScore() {
-        // given
         when(scoreRepository.findById(scoreId)).thenReturn(Optional.of(testScore));
 
-        // when
         Score foundScore = scoreService.getScoreById(scoreId);
 
-        // then
         assertNotNull(foundScore);
         assertEquals(scoreId, foundScore.getId());
         assertEquals(userId, foundScore.getUserId());
@@ -77,150 +69,119 @@ public class ScoreServiceImplTest {
 
     @Test
     void whenGetScoreByNonExistingId_thenReturnNull() {
-        // given
         Integer nonExistingId = 999;
         when(scoreRepository.findById(nonExistingId)).thenReturn(Optional.empty());
 
-        // when
         Score foundScore = scoreService.getScoreById(nonExistingId);
 
-        // then
         assertNull(foundScore);
         verify(scoreRepository, times(1)).findById(nonExistingId);
     }
 
     @Test
     void whenGetAllScores_thenReturnList() {
-        // given
         List<Score> scores = Arrays.asList(testScore, anotherScore);
         when(scoreRepository.findAll()).thenReturn(scores);
 
-        // when
         List<Score> allScores = scoreService.getAllScores();
 
-        // then
         assertEquals(2, allScores.size());
         verify(scoreRepository, times(1)).findAll();
     }
 
     @Test
-    void whenUpdateScore_thenScoreRepositorySaveIsCalled() {
-        // given
-        testScore.setScoreValue(150);
-        when(scoreRepository.save(any(Score.class))).thenReturn(testScore);
+    void whenGetAllScoresReturnsEmpty_thenReturnEmptyList() {
+        when(scoreRepository.findAll()).thenReturn(Collections.emptyList());
 
-        // when
-        scoreService.updateScore(testScore);
+        List<Score> allScores = scoreService.getAllScores();
 
-        // then
-        verify(scoreRepository, times(1)).save(testScore);
+        assertTrue(allScores.isEmpty());
+        verify(scoreRepository, times(1)).findAll();
     }
 
     @Test
-    void whenDeleteScoreById_thenScoreRepositoryDeleteByIdIsCalled() {
-        // given
+    void whenDeleteScoreById_thenRepositoryDeleteByIdIsCalled() {
         doNothing().when(scoreRepository).deleteById(scoreId);
 
-        // when
         scoreService.deleteScoreById(scoreId);
 
-        // then
         verify(scoreRepository, times(1)).deleteById(scoreId);
     }
 
     @Test
-    void whenGetScoresByUserId_thenReturnScoresList() {
-        // given
+    void whenGetScoresByUserId_thenReturnList() {
         List<Score> userScores = Arrays.asList(testScore, anotherScore);
         when(scoreRepository.findByUserId(userId)).thenReturn(userScores);
 
-        // when
         List<Score> foundScores = scoreService.getScoresByUserId(userId);
 
-        // then
         assertEquals(2, foundScores.size());
         verify(scoreRepository, times(1)).findByUserId(userId);
     }
 
     @Test
-    void whenGetScoresByNonExistingUserId_thenReturnEmptyList() {
-        // given
-        Integer nonExistingUserId = 999;
-        when(scoreRepository.findByUserId(nonExistingUserId)).thenReturn(Collections.emptyList());
-
-        // when
-        List<Score> foundScores = scoreService.getScoresByUserId(nonExistingUserId);
-
-        // then
-        assertTrue(foundScores.isEmpty());
-        verify(scoreRepository, times(1)).findByUserId(nonExistingUserId);
-    }
-
-    @Test
-    void whenGetScoresByGameId_thenReturnScoresList() {
-        // given
+    void whenGetScoresByGameId_thenReturnList() {
         List<Score> gameScores = List.of(testScore);
         when(scoreRepository.findByGameId(gameId)).thenReturn(gameScores);
 
-        // when
         List<Score> foundScores = scoreService.getScoresByGameId(gameId);
 
-        // then
         assertEquals(1, foundScores.size());
         assertEquals(gameId, foundScores.get(0).getGameId());
         verify(scoreRepository, times(1)).findByGameId(gameId);
     }
 
     @Test
-    void whenGetScoresByNonExistingGameId_thenReturnEmptyList() {
-        // given
-        Integer nonExistingGameId = 999;
-        when(scoreRepository.findByGameId(nonExistingGameId)).thenReturn(Collections.emptyList());
+    void whenGetHighestScoreByUserAndGame_thenReturnOptionalScore() {
+        when(scoreRepository.findTopByUserIdAndGameIdOrderByScoreValueDesc(userId, gameId))
+                .thenReturn(Optional.of(testScore));
 
-        // when
-        List<Score> foundScores = scoreService.getScoresByGameId(nonExistingGameId);
+        Optional<Score> result = scoreService.getHighestScoreByUserAndGame(userId, gameId);
 
-        // then
-        assertTrue(foundScores.isEmpty());
-        verify(scoreRepository, times(1)).findByGameId(nonExistingGameId);
+        assertTrue(result.isPresent());
+        assertEquals(testScore, result.get());
+        verify(scoreRepository, times(1))
+                .findTopByUserIdAndGameIdOrderByScoreValueDesc(userId, gameId);
     }
 
     @Test
-    void whenSaveScore_thenScoreRepositorySaveIsCalled() {
-        // given
-        when(scoreRepository.save(any(Score.class))).thenReturn(testScore);
+    void whenGetTopNScoresByGame_thenReturnList() {
+        int n = 2;
+        List<Score> topScores = Arrays.asList(testScore, anotherScore);
+        when(scoreRepository.findTopScoresByGameId(eq(gameId), any(PageRequest.class)))
+                .thenReturn(topScores);
 
-        // when
-        scoreService.saveScore(testScore);
+        List<Score> result = scoreService.getTopNScoresByGame(gameId, n);
 
-        // then
-        verify(scoreRepository, times(1)).save(testScore);
+        assertEquals(2, result.size());
+        verify(scoreRepository, times(1))
+                .findTopScoresByGameId(eq(gameId), any(PageRequest.class));
     }
 
     @Test
-    void whenSaveScoreWithNullId_thenScoreRepositorySaveIsCalled() {
-        // given
-        Score newScore = new Score(userId, gameId, 150, Timestamp.from(Instant.now()), "user@example.com", 90);
-        // Id is not set (null)
-        when(scoreRepository.save(any(Score.class))).thenReturn(newScore);
+    void whenGetTotalPlayTimeByUserAndGame_thenReturnValue() {
+        Integer totalPlayTime = 180;
+        when(scoreRepository.getTotalPlayTimeByUserIdAndGameId(userId, gameId))
+                .thenReturn(totalPlayTime);
 
-        // when
-        scoreService.saveScore(newScore);
+        Integer result = scoreService.getTotalPlayTimeByUserAndGame(userId, gameId);
 
-        // then
-        verify(scoreRepository, times(1)).save(newScore);
+        assertEquals(totalPlayTime, result);
+        verify(scoreRepository, times(1))
+                .getTotalPlayTimeByUserIdAndGameId(userId, gameId);
     }
 
     @Test
-    void whenGetAllScoresReturnsEmpty_thenReturnEmptyList() {
-        // given
-        when(scoreRepository.findAll()).thenReturn(Collections.emptyList());
+    void whenGetTotalPlayTimeGroupByGame_thenReturnList() {
+        List<Object[]> playTimes = Arrays.asList(
+                new Object[]{gameId, 100},
+                new Object[]{202, 200}
+        );
+        when(scoreRepository.getTotalPlayTimeGroupByGameId(userId)).thenReturn(playTimes);
 
-        // when
-        List<Score> allScores = scoreService.getAllScores();
+        List<Object[]> result = scoreService.getTotalPlayTimeGroupByGame(userId);
 
-        // then
-        assertTrue(allScores.isEmpty());
-        verify(scoreRepository, times(1)).findAll();
+        assertEquals(2, result.size());
+        verify(scoreRepository, times(1)).getTotalPlayTimeGroupByGameId(userId);
     }
 }
