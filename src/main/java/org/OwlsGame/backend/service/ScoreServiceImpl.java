@@ -13,7 +13,6 @@ import java.util.Optional;
 @Service
 @Transactional
 public class ScoreServiceImpl implements ScoreService {
-
     private final ScoreRepository scoreRepository;
 
     @Autowired
@@ -22,11 +21,12 @@ public class ScoreServiceImpl implements ScoreService {
     }
 
     @Override
-    public void createScore(Score score) {
-        scoreRepository.save(score);
+    public Score saveScore(Score score) {
+        return scoreRepository.save(score);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Score getScoreById(Integer id) {
         return scoreRepository.findById(id).orElse(null);
     }
@@ -35,11 +35,6 @@ public class ScoreServiceImpl implements ScoreService {
     @Transactional(readOnly = true)
     public List<Score> getAllScores() {
         return scoreRepository.findAll();
-    }
-
-    @Override
-    public void updateScore(Score score) {
-        scoreRepository.save(score);
     }
 
     @Override
@@ -81,10 +76,5 @@ public class ScoreServiceImpl implements ScoreService {
     @Transactional(readOnly = true)
     public List<Object[]> getTotalPlayTimeGroupByGame(Integer userId) {
         return scoreRepository.getTotalPlayTimeGroupByGameId(userId);
-    }
-
-    @Override
-    public void saveScore(Score score) {
-        scoreRepository.save(score);
     }
 }
