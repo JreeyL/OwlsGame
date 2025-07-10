@@ -38,8 +38,8 @@ public class OwlsGameApplicationTest {
 
         String[] basePackages = entityScan.basePackages();
         assertTrue(basePackages.length > 0, "EntityScan should have at least one base package defined");
-        assertEquals("org.OwlsGame.backend.models", basePackages[0],
-                "EntityScan should be configured to scan 'org.OwlsGame.backend.models'");
+        assertEquals("org.OwlsGame.backend", basePackages[0],
+                "EntityScan should be configured to scan 'org.OwlsGame.backend'");
     }
 
     /**
@@ -53,8 +53,8 @@ public class OwlsGameApplicationTest {
 
         String[] basePackages = repositories.basePackages();
         assertTrue(basePackages.length > 0, "EnableJpaRepositories should have at least one base package defined");
-        assertEquals("org.OwlsGame.backend.dao", basePackages[0],
-                "EnableJpaRepositories should be configured to scan 'org.OwlsGame.backend.dao'");
+        assertEquals("org.OwlsGame.backend", basePackages[0],
+                "EnableJpaRepositories should be configured to scan 'org.OwlsGame.backend'");
     }
 
     /**
