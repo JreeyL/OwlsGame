@@ -13,6 +13,7 @@ const finalScoreEl = document.getElementById("final-score");
 function startGame() {
     currentQuestion = 0;
     score = 0;
+    finalScoreEl.textContent = "";
     startView.classList.add("hidden");
     gameOverView.classList.add("hidden");
     gameView.classList.remove("hidden");
