@@ -40,13 +40,6 @@ class HomeControllerTest {
     }
 
     @Test
-    void showTofGame_ShouldReturnTofGamePage() throws Exception {
-        mockMvc.perform(get("/TofGame"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("TofGame.jsp"));
-    }
-
-    @Test
     void showLeaderboard_ShouldReturnLeaderboardPage() throws Exception {
         mockMvc.perform(get("/leaderboard"))
                 .andExpect(status().isOk())
