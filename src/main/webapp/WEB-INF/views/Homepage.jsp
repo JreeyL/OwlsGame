@@ -1,10 +1,9 @@
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="ISO-8859-1">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Homepage.css" />
+    <link rel="stylesheet" href="/css/Homepage.css" />
 </head>
 <body>
 <div class="w3-sidebar w3-bar-block w3-pale-blue" style="width: 25%">
@@ -13,7 +12,8 @@
     <p class="w3-margin">Tic-Tac-Toe is a fast game where two players take turns marking a 3x3 grid with Xs and Os. The goal is to get three in a row before your opponent!</p>
     <a href="#" class="w3-bar-item w3-button w3-teal w3-hover-pink">Guessing Game</a>
     <p class="w3-margin">In a number guessing game, one player thinks of a number, and the other has to guess it! After each guess, the first player says if the number is higher or lower. Keep guessing until you crack the code</p>
-    <a href="${pageContext.request.contextPath}/TofGame" class="w3-bar-item w3-button w3-teal w3-hover-pink">True/False</a>
+
+    <a href="/TofGame.html" class="w3-bar-item w3-button w3-teal w3-hover-pink">True/False</a>
     <p class="w3-margin">In a True or False facts game, players take turns sharing statements, and the others have to guess if they are true or false. It's a fun way to test your knowledge and learn new things!</p>
     <a href="#" class="w3-bar-item w3-button w3-teal w3-hover-pink">Memory Game</a>
     <p class="w3-margin">In a price item matching game, players match products to their correct prices. Guess the right price, and earn points! It's a fun way to test your knowledge of how much things cost.</p>
@@ -21,11 +21,11 @@
 
 <div style="margin-left: 25%">
     <nav class="navbar w3-teal">
-        <img src="${pageContext.request.contextPath}/images/Owl_logo.png" alt="Owl Logo" width="50" height="50" />
-        <a href="${pageContext.request.contextPath}/home" class="w3-button w3-teal w3-hover-pink">Home</a>
-        <a href="${pageContext.request.contextPath}/login" class="w3-button w3-teal w3-hover-pink">Login</a>
-        <a href="${pageContext.request.contextPath}/usersRegister" class="w3-button w3-teal w3-hover-pink">Sign up</a>
-        <a href="${pageContext.request.contextPath}/leaderboard" class="w3-button w3-teal w3-hover-pink">Leaderboard</a>
+        <img src="/images/Owl_logo.png" alt="Owl Logo" width="50" height="50" />
+        <a href="/home" class="w3-button w3-teal w3-hover-pink">Home</a>
+        <a href="/login" class="w3-button w3-teal w3-hover-pink">Login</a>
+        <a href="/usersRegister" class="w3-button w3-teal w3-hover-pink">Sign up</a>
+        <a href="/leaderboard" class="w3-button w3-teal w3-hover-pink">Leaderboard</a>
     </nav>
 
     <div class="w3-container w3-white w3-center w3-opacity-min">
@@ -42,19 +42,21 @@
     <div id="cards" class="w3-container">
         <div class="w3-cell-row">
             <div class="w3-container w3-cell">
-                <img src="${pageContext.request.contextPath}/images/Tic-Tac-Toe_Image.png" alt="Tic-Tac-Toe" style="width: 102%">
+                <img src="/images/Tic-Tac-Toe_Image.png" alt="Tic-Tac-Toe" style="width: 102%">
                 <button class="w3-button w3-block w3-teal w3-hover-pink" style="width: 102%">Tic-Tac-Toe</button>
             </div>
             <div class="w3-container w3-cell">
-                <img src="${pageContext.request.contextPath}/images/Guessing_Game_Image.png" alt="Guessing Game" style="width: 94%">
+                <img src="/images/Guessing_Game_Image.png" alt="Guessing Game" style="width: 94%">
                 <button class="w3-button w3-block w3-teal w3-hover-pink" style="width: 94%">Guessing Game</button>
             </div>
             <div class="w3-container w3-cell">
-                <img src="${pageContext.request.contextPath}/images/True_Or_False_Game.png" alt="True/False" style="width: 105%">
-                <button onclick="window.location.href='${pageContext.request.contextPath}/TofGame'" class="w3-button w3-block w3-teal w3-hover-pink" style="width: 105%">True/False</button>
+                <img src="/images/True_Or_False_Game.png" alt="True/False" style="width: 105%">
+
+                <a href="/TofGame.html" class="w3-button w3-block w3-teal w3-hover-pink" style="width: 105%; display: inline-block; text-align: center;">True/False</a>
+
             </div>
             <div class="w3-container w3-cell">
-                <img src="${pageContext.request.contextPath}/images/Memory_Game_Image.png" alt="Memory Game" style="width: 98%">
+                <img src="/images/Memory_Game_Image.png" alt="Memory Game" style="width: 98%">
                 <button class="w3-button w3-block w3-teal w3-hover-pink" style="width: 98%">Memory Game</button>
             </div>
             <br>

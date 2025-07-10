@@ -10,8 +10,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"org.OwlsGame", "org.OwlsGame.controllers", "org.OwlsGame.backend", "org.OwlsGame.config"})
-@EntityScan(basePackages = "org.OwlsGame.backend.models")  // 明确扫描实体类
-@EnableJpaRepositories(basePackages = "org.OwlsGame.backend.dao")  // 明确扫描Repository接口
+@EntityScan(basePackages = "org.OwlsGame.backend")
+@EnableJpaRepositories(basePackages = "org.OwlsGame.backend")// 明确扫描Repository接口
 public class OwlsGameApplication extends SpringBootServletInitializer {
 
     @Override
