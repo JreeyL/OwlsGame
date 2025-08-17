@@ -7,9 +7,9 @@ pipeline {
     }
 
     environment {
-        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
+        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials' // Jenkins中的DockerHub凭据ID
         DOCKER_IMAGE_NAME = "jiyuli/owlsgame"
-        SSH_CREDENTIALS_ID = 'aws-ec2-id_rsa' // 你在Jenkins配置的SSH私钥ID
+        SSH_CREDENTIALS_ID = 'aws-ec2-id_rsa' // Jenkins中的EC2 SSH私钥ID
         APP_HOST = "3.252.140.1"
         APP_USER = "ec2-user"
     }
@@ -61,14 +61,14 @@ pipeline {
 
         stage('Deploy to EC2 APP') {
             steps {
-                sshagent([SSH_CREDENTIALS_ID]) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ${APP_USER}@${APP_HOST} '
-                        docker pull ${DOCKER_IMAGE_NAME}:latest &&
-                        docker stop owlsgame-app || true &&
-                        docker rm owlsgame-app || true &&
-                        docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql ${DOCKER_IMAGE_NAME}:latest
-                    '
+                // Windows节点不能用sshagent，改为withCredentials+sshUserPrivateKey
+                withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME')]) {
+                    bat """
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} ^
+                        "docker pull ${DOCKER_IMAGE_NAME}:latest && ^
+                        docker stop owlsgame-app || exit 0 && ^
+                        docker rm owlsgame-app || exit 0 && ^
+                        docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql ${DOCKER_IMAGE_NAME}:latest"
                     """
                 }
             }
