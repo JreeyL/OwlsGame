@@ -64,11 +64,12 @@ pipeline {
                 // Windows节点不能用sshagent，改为withCredentials+sshUserPrivateKey
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME')]) {
                     bat """
+                    icacls %KEYFILE% /inheritance:r /grant %USERNAME%:R
                     ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} ^
                         "docker pull ${DOCKER_IMAGE_NAME}:latest && ^
-                        docker stop owlsgame-app || exit 0 && ^
-                        docker rm owlsgame-app || exit 0 && ^
-                        docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql ${DOCKER_IMAGE_NAME}:latest"
+                         docker stop owlsgame-app || exit 0 && ^
+                         docker rm owlsgame-app || exit 0 && ^
+                         docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql ${DOCKER_IMAGE_NAME}:latest"
                     """
                 }
             }
