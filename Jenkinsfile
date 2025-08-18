@@ -62,17 +62,11 @@ pipeline {
         stage('Deploy to EC2 APP') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME')]) {
-                    // 修正密钥权限：只允许SYSTEM账户读取，移除 BUILTIN\Users 组权限
                     bat """
                     icacls %KEYFILE% /inheritance:r
                     icacls %KEYFILE% /remove BUILTIN\\Users
                     icacls %KEYFILE% /grant SYSTEM:R
-                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "
-                        docker pull ${DOCKER_IMAGE_NAME}:latest &&
-                        docker stop owlsgame-app || true &&
-                        docker rm owlsgame-app || true &&
-                        docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql ${DOCKER_IMAGE_NAME}:latest
-                    "
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker pull ${DOCKER_IMAGE_NAME}:latest && docker stop owlsgame-app || true && docker rm owlsgame-app || true && docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql ${DOCKER_IMAGE_NAME}:latest"
                     """
                 }
             }
