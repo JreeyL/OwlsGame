@@ -61,10 +61,12 @@ pipeline {
 
         stage('Deploy to EC2 APP') {
             steps {
-                // Windows节点不能用sshagent，改为withCredentials+sshUserPrivateKey
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME')]) {
+                    // 修正密钥权限：只允许SYSTEM账户读取，移除 BUILTIN\Users 组权限
                     bat """
-                    icacls %KEYFILE% /inheritance:r /grant %USERNAME%:R
+                    icacls %KEYFILE% /inheritance:r
+                    icacls %KEYFILE% /remove BUILTIN\\Users
+                    icacls %KEYFILE% /grant SYSTEM:R
                     ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} ^
                         "docker pull ${DOCKER_IMAGE_NAME}:latest && ^
                          docker stop owlsgame-app || exit 0 && ^
