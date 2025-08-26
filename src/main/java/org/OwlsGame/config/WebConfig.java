@@ -1,5 +1,6 @@
 package org.OwlsGame.config;
 
+import org.OwlsGame.backend.AdminAuthFilter;
 import org.OwlsGame.backend.AppContextListener;
 import org.OwlsGame.backend.HelloServlet;
 import org.OwlsGame.backend.LoggingFilter;
@@ -86,4 +87,14 @@ public class WebConfig implements WebMvcConfigurer {
         registry.viewResolver(htmlViewResolver());
         registry.viewResolver(jspViewResolver());
     }
+
+    @Bean
+    public FilterRegistrationBean<AdminAuthFilter> adminAuthFilter() {
+        FilterRegistrationBean<AdminAuthFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new AdminAuthFilter());
+        registration.addUrlPatterns("/admin/*");
+        registration.setOrder(1); // 高优先级
+        return registration;
+    }
+
 }
