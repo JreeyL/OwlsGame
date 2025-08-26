@@ -22,6 +22,10 @@ public class TofQuestion {
     }
 
     public Long getId() { return id; }
+
+    // 添加 setId 方法
+    public void setId(Long id) { this.id = id; }
+
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
     public Boolean getAnswer() { return answer; }
