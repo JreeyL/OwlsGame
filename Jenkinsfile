@@ -39,8 +39,6 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            // Disabled for now. Remove the 'when' block to enable.
-            when { expression { false } }
             steps {
                 withSonarQubeEnv('sonarqube-local') {
                     bat 'mvn sonar:sonar'
@@ -60,7 +58,9 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     echo "Logging in to Docker Hub as ${DOCKER_USER}..."
-                    bat "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
+                    bat """
+                    echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                    """
 
                     echo "Pushing tag: ${env.BUILD_NUMBER}"
                     bat "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
@@ -77,40 +77,10 @@ pipeline {
                     sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME'),
                     usernamePassword(credentialsId: DB_CREDENTIALS_ID, usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')
                 ]) {
-                    script {
-                        // Define the multi-line shell script to be executed remotely.
-                        def remoteScript = """
-                            #!/bin/bash
-                            set -e
-
-                            echo '--- Pulling latest image from Docker Hub ---'
-                            docker pull ${DOCKER_IMAGE_NAME}:latest
-
-                            echo '--- Stopping and removing old container ---'
-                            docker stop owlsgame-app || true
-                            docker rm owlsgame-app || true
-
-                            echo '--- Starting new container ---'
-                            docker run -d --name owlsgame-app -p 8080:8080 \\
-                                -e SPRING_PROFILES_ACTIVE=prod \\
-                                -e SPRING_DATASOURCE_URL='jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC' \\
-                                -e SPRING_DATASOURCE_USERNAME=${DB_USER} \\
-                                -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' \\
-                                -e SPRING_JPA_DATABASE-PLATFORM=org.hibernate.dialect.MySQLDialect \\
-                                -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \\
-                                --restart unless-stopped \\
-                                ${DOCKER_IMAGE_NAME}:latest
-
-                            echo '--- Deployment script finished successfully ---'
-                        """
-
-                        // Encode the script to Base64 to safely pass it through Windows cmd.
-                        def encodedScript = remoteScript.bytes.encodeBase64().toString()
-
-                        // Execute the script on the remote server by decoding it from Base64 via ssh.
-                        // This is the most robust way for a Windows agent to run complex scripts on a Linux target.
-                        bat "ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} \"echo ${encodedScript} | base64 --decode | bash\""
-                    }
+                    bat """
+                    echo --- Deploying to EC2 ---
+                    ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker pull ${DOCKER_IMAGE_NAME}:latest && docker stop owlsgame-app || true && docker rm owlsgame-app || true && docker run -d --name owlsgame-app -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL='jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC' -e SPRING_DATASOURCE_USERNAME=${DB_USER} -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' -e SPRING_JPA_DATABASE-PLATFORM=org.hibernate.dialect.MySQLDialect -e SPRING_JPA_HIBERNATE_DDL_AUTO=update --restart unless-stopped ${DOCKER_IMAGE_NAME}:latest"
+                    """
                 }
             }
         }
@@ -123,10 +93,10 @@ pipeline {
                     timeout /t 15 /nobreak >nul
 
                     echo "--- Checking container status on ${APP_HOST} ---"
-                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker ps --filter name=owlsgame-app"
+                    ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker ps --filter name=owlsgame-app"
 
                     echo "--- Showing last 100 lines of app logs ---"
-                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker logs --tail 100 owlsgame-app"
+                    ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker logs --tail 100 owlsgame-app"
                     """
                 }
             }
