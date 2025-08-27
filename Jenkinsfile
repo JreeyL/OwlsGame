@@ -23,7 +23,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/JreeyL/OwlsGame.git'
+                git branch: 'Dev', url: 'https://github.com/JreeyL/OwlsGame.git'
             }
         }
 
@@ -77,10 +77,20 @@ pipeline {
                     sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME'),
                     usernamePassword(credentialsId: DB_CREDENTIALS_ID, usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')
                 ]) {
-                    bat """
-                    echo --- Deploying to EC2 ---
-                    ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker pull ${DOCKER_IMAGE_NAME}:latest && docker stop owlsgame-app || true && docker rm owlsgame-app || true && docker run -d --name owlsgame-app -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL='jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC' -e SPRING_DATASOURCE_USERNAME=${DB_USER} -e SPRING_DATASOURCE_PASSWORD='${DB_PASS}' -e SPRING_JPA_DATABASE-PLATFORM=org.hibernate.dialect.MySQLDialect -e SPRING_JPA_HIBERNATE_DDL_AUTO=update --restart unless-stopped ${DOCKER_IMAGE_NAME}:latest"
-                    """
+                    script {
+                        // Fix SSH key permissions on Windows
+                        bat """
+                        echo --- Fixing SSH key permissions ---
+                        icacls "%KEYFILE%" /inheritance:r
+                        icacls "%KEYFILE%" /grant:r "%USERNAME%:(R)"
+                        """
+                        
+                        // Deploy to EC2 using safe variable interpolation
+                        bat '''
+                        echo --- Deploying to EC2 ---
+                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@''' + APP_HOST + ''' "docker pull ''' + DOCKER_IMAGE_NAME + ''':latest && docker stop owlsgame-app || true && docker rm owlsgame-app || true && docker run -d --name owlsgame-app -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL='jdbc:mysql://''' + DB_HOST + ''':3306/''' + DB_NAME + '''?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC' -e SPRING_DATASOURCE_USERNAME=%DB_USER% -e SPRING_DATASOURCE_PASSWORD='%DB_PASS%' -e SPRING_JPA_DATABASE-PLATFORM=org.hibernate.dialect.MySQLDialect -e SPRING_JPA_HIBERNATE_DDL_AUTO=update --restart unless-stopped ''' + DOCKER_IMAGE_NAME + ''':latest"
+                        '''
+                    }
                 }
             }
         }
@@ -88,16 +98,24 @@ pipeline {
         stage('Post-deploy Check') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME')]) {
-                    bat """
-                    REM Wait 15 seconds for the container to initialize.
-                    timeout /t 15 /nobreak >nul
+                    script {
+                        // Fix SSH key permissions on Windows for post-deploy check
+                        bat """
+                        icacls "%KEYFILE%" /inheritance:r
+                        icacls "%KEYFILE%" /grant:r "%USERNAME%:(R)"
+                        """
+                        
+                        bat '''
+                        REM Wait 15 seconds for the container to initialize.
+                        timeout /t 15 /nobreak >nul
 
-                    echo "--- Checking container status on ${APP_HOST} ---"
-                    ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker ps --filter name=owlsgame-app"
+                        echo --- Checking container status on ''' + APP_HOST + ''' ---
+                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@''' + APP_HOST + ''' "docker ps --filter name=owlsgame-app"
 
-                    echo "--- Showing last 100 lines of app logs ---"
-                    ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker logs --tail 100 owlsgame-app"
-                    """
+                        echo --- Showing last 100 lines of app logs ---
+                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@''' + APP_HOST + ''' "docker logs --tail 100 owlsgame-app"
+                        '''
+                    }
                 }
             }
         }
