@@ -78,11 +78,12 @@ pipeline {
                     usernamePassword(credentialsId: DB_CREDENTIALS_ID, usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')
                 ]) {
                     script {
-                        // Fix SSH key permissions on Windows
+                        // Fix SSH key permissions on Windows using Jenkins user
                         bat """
                         echo --- Fixing SSH key permissions ---
                         icacls "%KEYFILE%" /inheritance:r
-                        icacls "%KEYFILE%" /grant:r "%USERNAME%:(R)"
+                        icacls "%KEYFILE%" /grant:r "Everyone:(R)"
+                        icacls "%KEYFILE%" /grant:r "SYSTEM:(F)"
                         """
                         
                         // Deploy to EC2 using safe variable interpolation
@@ -102,7 +103,8 @@ pipeline {
                         // Fix SSH key permissions on Windows for post-deploy check
                         bat """
                         icacls "%KEYFILE%" /inheritance:r
-                        icacls "%KEYFILE%" /grant:r "%USERNAME%:(R)"
+                        icacls "%KEYFILE%" /grant:r "Everyone:(R)"
+                        icacls "%KEYFILE%" /grant:r "SYSTEM:(F)"
                         """
                         
                         bat '''
