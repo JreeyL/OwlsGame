@@ -7,12 +7,12 @@ public class AppContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        System.out.println("=== 应用启动 ===");
+        System.out.println("=== Application Started ===");
         System.out.println("Server Info: " + sce.getServletContext().getServerInfo());
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-        System.out.println("=== 应用关闭 ===");
+        System.out.println("=== Application Shutdown ===");
     }
 }
