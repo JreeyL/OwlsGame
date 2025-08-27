@@ -1,28 +1,28 @@
 package org.OwlsGame.backend;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import static org.mockito.Mockito.when;
+import org.mockito.MockitoAnnotations;
+
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
 
 public class AppContextListenerTest {
 
     private AppContextListener listener;
 
-    // 只模拟ServletContext
+    // Mock only ServletContext
     @Mock
     private ServletContext mockContext;
 
-    // ServletContextEvent将使用真实实例
+    // ServletContextEvent will use real instance
     private ServletContextEvent event;
 
     // For capturing System.out
@@ -31,50 +31,50 @@ public class AppContextListenerTest {
 
     @BeforeEach
     public void setUp() {
-        // 初始化Mockito注解
+        // Initialize Mockito annotations
         MockitoAnnotations.openMocks(this);
 
-        // 创建监听器实例
+        // Create listener instance
         listener = new AppContextListener();
 
-        // 配置模拟行为
+        // Configure mock behavior
         when(mockContext.getServerInfo()).thenReturn("Test Server");
 
-        // 使用模拟的ServletContext创建真实的ServletContextEvent
+        // Create real ServletContextEvent using mocked ServletContext
         event = new ServletContextEvent(mockContext);
 
-        // 重定向System.out以捕获输出
+        // Redirect System.out to capture output
         System.setOut(new PrintStream(outputStream));
     }
 
     @AfterEach
     public void tearDown() {
-        // 恢复原始System.out
+        // Restore original System.out
         System.setOut(originalOut);
     }
 
     @Test
     public void testContextInitialized() {
-        // 调用测试方法
+        // Call test method
         listener.contextInitialized(event);
 
-        // 获取捕获的输出
+        // Get captured output
         String output = outputStream.toString();
 
-        // 验证输出包含预期消息
-        assertTrue(output.contains("=== 应用启动 ==="), "Should log application startup");
+        // Verify output contains expected messages
+        assertTrue(output.contains("=== Application Started ==="), "Should log application startup");
         assertTrue(output.contains("Server Info: Test Server"), "Should log server info");
     }
 
     @Test
     public void testContextDestroyed() {
-        // 调用测试方法
+        // Call test method
         listener.contextDestroyed(event);
 
-        // 获取捕获的输出
+        // Get captured output
         String output = outputStream.toString();
 
-        // 验证输出包含预期消息
-        assertTrue(output.contains("=== 应用关闭 ==="), "Should log application shutdown");
+        // Verify output contains expected messages
+        assertTrue(output.contains("=== Application Shutdown ==="), "Should log application shutdown");
     }
 }

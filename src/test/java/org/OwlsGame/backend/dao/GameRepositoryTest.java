@@ -1,16 +1,20 @@
 package org.OwlsGame.backend.dao;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.OwlsGame.backend.models.Game;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.DirtiesContext;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -22,14 +26,14 @@ public class GameRepositoryTest {
     @Autowired
     private GameRepository gameRepository;
 
-    // 创建测试游戏的辅助方法
+    // Helper method to create test games
     private Game createTestGame(String name, int maxScore) {
         return new Game(name, maxScore);
     }
 
     @Test
     public void whenFindByName_thenReturnGame() {
-        Game game = createTestGame("测试游戏", 100);
+        Game game = createTestGame("Test Game", 100);
         entityManager.persist(game);
         entityManager.flush();
 
@@ -42,7 +46,7 @@ public class GameRepositoryTest {
 
     @Test
     public void whenFindByNonExistingName_thenReturnEmpty() {
-        String nonExistingName = "不存在的游戏";
+        String nonExistingName = "Non-Existent Game";
         Optional<Game> found = gameRepository.findByName(nonExistingName);
         assertFalse(found.isPresent());
     }
@@ -50,9 +54,9 @@ public class GameRepositoryTest {
     @Test
     public void whenFindByMaxScore_thenReturnGames() {
         int targetMaxScore = 200;
-        Game game1 = createTestGame("游戏1", targetMaxScore);
-        Game game2 = createTestGame("游戏2", targetMaxScore);
-        Game game3 = createTestGame("游戏3", 300);
+        Game game1 = createTestGame("Game 1", targetMaxScore);
+        Game game2 = createTestGame("Game 2", targetMaxScore);
+        Game game3 = createTestGame("Game 3", 300);
 
         entityManager.persist(game1);
         entityManager.persist(game2);
@@ -74,7 +78,7 @@ public class GameRepositoryTest {
 
     @Test
     public void whenSaveGame_thenGameIsPersisted() {
-        Game game = createTestGame("新游戏", 150);
+        Game game = createTestGame("New Game", 150);
         Game savedGame = gameRepository.save(game);
         assertNotNull(savedGame.getId());
         assertEquals(game.getName(), savedGame.getName());
@@ -83,7 +87,7 @@ public class GameRepositoryTest {
 
     @Test
     public void whenFindById_thenReturnGame() {
-        Game game = createTestGame("ID查询测试", 250);
+        Game game = createTestGame("ID Query Test", 250);
         game = entityManager.persist(game);
         entityManager.flush();
         Long gameId = game.getId();
@@ -104,23 +108,23 @@ public class GameRepositoryTest {
 
     @Test
     public void whenUpdateGame_thenGameIsUpdated() {
-        Game game = createTestGame("原始游戏", 300);
+        Game game = createTestGame("Original Game", 300);
         game = entityManager.persist(game);
         entityManager.flush();
 
-        game.setName("更新后的游戏");
+        game.setName("Updated Game");
         game.setMaxScore(400);
         Game updatedGame = gameRepository.save(game);
         entityManager.flush();
 
         Game retrievedGame = entityManager.find(Game.class, game.getId());
-        assertEquals("更新后的游戏", retrievedGame.getName());
+        assertEquals("Updated Game", retrievedGame.getName());
         assertEquals(400, retrievedGame.getMaxScore());
     }
 
     @Test
     public void whenDeleteGame_thenGameIsRemoved() {
-        Game game = createTestGame("待删除游戏", 100);
+        Game game = createTestGame("Game To Delete", 100);
         game = entityManager.persist(game);
         entityManager.flush();
         Long gameId = game.getId();
@@ -134,9 +138,9 @@ public class GameRepositoryTest {
 
     @Test
     public void whenFindAll_thenReturnAllGames() {
-        Game game1 = createTestGame("全部游戏1", 100);
-        Game game2 = createTestGame("全部游戏2", 200);
-        Game game3 = createTestGame("全部游戏3", 300);
+        Game game1 = createTestGame("All Games 1", 100);
+        Game game2 = createTestGame("All Games 2", 200);
+        Game game3 = createTestGame("All Games 3", 300);
 
         entityManager.persist(game1);
         entityManager.persist(game2);
@@ -146,14 +150,14 @@ public class GameRepositoryTest {
         List<Game> games = gameRepository.findAll();
 
         assertEquals(3, games.size());
-        assertTrue(games.stream().anyMatch(g -> g.getName().equals("全部游戏1")));
-        assertTrue(games.stream().anyMatch(g -> g.getName().equals("全部游戏2")));
-        assertTrue(games.stream().anyMatch(g -> g.getName().equals("全部游戏3")));
+        assertTrue(games.stream().anyMatch(g -> g.getName().equals("All Games 1")));
+        assertTrue(games.stream().anyMatch(g -> g.getName().equals("All Games 2")));
+        assertTrue(games.stream().anyMatch(g -> g.getName().equals("All Games 3")));
     }
 
     @Test
     public void whenResetGame_thenMaxScoreIsZero() {
-        Game game = createTestGame("测试重置功能", 500);
+        Game game = createTestGame("Test Reset Function", 500);
         game = entityManager.persist(game);
         entityManager.flush();
 

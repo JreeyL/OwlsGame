@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Games Administration</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <style>
+        .action-btn {
+            margin: 2px;
+        }
+        .game-table {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="w3-container w3-teal">
+    <h1>Games Administration</h1>
+    <p class="w3-tiny">Current Date: <span id="current-date"></span></p>
+</div>
+
+<div class="w3-container">
+    <h2>Game Management</h2>
+    <p>This is the admin panel for managing games.</p>
+
+    <div class="w3-panel w3-pale-yellow">
+        <p>Add new games and edit existing ones here.</p>
+    </div>
+
+    <!-- 添加游戏表单 -->
+    <div class="w3-card w3-margin-bottom w3-padding">
+        <h3>Add New Game</h3>
+        <form id="add-game-form" class="w3-container">
+            <p>
+                <label>Game Name</label>
+                <input class="w3-input w3-border" type="text" id="game-name" required>
+            </p>
+            <p>
+                <label>Max Score</label>
+                <input class="w3-input w3-border" type="number" id="max-score" required min="1" value="1000">
+            </p>
+            <button type="submit" class="w3-button w3-teal">Add Game</button>
+        </form>
+    </div>
+
+    <!-- 游戏列表 -->
+    <div class="w3-card w3-padding game-table">
+        <h3>Games List</h3>
+        <div id="loading" class="w3-center">
+            <p><i class="w3-spin w3-xxlarge">↻</i></p>
+            <p>Loading games...</p>
+        </div>
+        <table class="w3-table-all" id="games-table" style="display:none;">
+            <thead>
+            <tr class="w3-teal">
+                <th>ID</th>
+                <th>Name</th>
+                <th>Max Score</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="games-list">
+            <!-- Games will be loaded here -->
+            </tbody>
+        </table>
+        <div id="no-games" class="w3-panel w3-pale-red" style="display:none;">
+            <h4>No games found</h4>
+            <p>Use the form above to add your first game.</p>
+        </div>
+    </div>
+
+    <div class="w3-margin-top">
+        <a href="/game-admin/games-scores" class="w3-button w3-blue">Go to Scores Admin</a>
+        <a href="/" class="w3-button w3-green">Back to Home</a>
+    </div>
+</div>
+
+<script>
+    // 显示当前日期
+    document.getElementById('current-date').textContent = new Date().toISOString().slice(0, 10);
+
+    // 加载游戏数据
+    window.onload = function() {
+        loadGames();
+
+        // 添加游戏表单提交
+        document.getElementById('add-game-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addGame();
+        });
+    };
+
+    // 加载游戏列表
+    function loadGames() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('games-table').style.display = 'none';
+        document.getElementById('no-games').style.display = 'none';
+
+        fetch('/api/admin/games')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(games => {
+                const tableBody = document.getElementById('games-list');
+                tableBody.innerHTML = '';
+
+                if (games.length === 0) {
+                    document.getElementById('no-games').style.display = 'block';
+                } else {
+                    games.forEach(game => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${game.id}</td>
+                            <td>${game.name}</td>
+                            <td>${game.maxScore}</td>
+                            <td>
+                                <button class="w3-button w3-tiny w3-blue action-btn" onclick="editGame(${game.id})">Edit</button>
+                                <button class="w3-button w3-tiny w3-red action-btn" onclick="deleteGame(${game.id})">Delete</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                    document.getElementById('games-table').style.display = 'table';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading games:', error);
+                // 如果API不可用，显示模拟数据
+                displayMockData();
+            })
+            .finally(() => {
+                document.getElementById('loading').style.display = 'none';
+            });
+    }
+
+    // 如果API不可用，显示模拟数据
+    function displayMockData() {
+        const mockGames = [
+            { id: 1, name: "True/False", maxScore: 1000 }
+        ];
+
+        const tableBody = document.getElementById('games-list');
+        tableBody.innerHTML = '';
+
+        mockGames.forEach(game => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${game.id}</td>
+                <td>${game.name}</td>
+                <td>${game.maxScore}</td>
+                <td>
+                    <button class="w3-button w3-tiny w3-blue action-btn" onclick="alert('Mock Edit - API not available')">Edit</button>
+                    <button class="w3-button w3-tiny w3-red action-btn" onclick="alert('Mock Delete - API not available')">Delete</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        document.getElementById('games-table').style.display = 'table';
+    }
+
+    // 添加游戏
+    function addGame() {
+        const name = document.getElementById('game-name').value;
+        const maxScore = document.getElementById('max-score').value;
+
+        const game = {
+            name: name,
+            maxScore: parseInt(maxScore)
+        };
+
+        fetch('/api/admin/games', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(game)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Game added successfully!');
+                document.getElementById('game-name').value = '';
+                document.getElementById('max-score').value = '1000';
+                loadGames();
+            })
+            .catch(error => {
+                console.error('Error adding game:', error);
+                alert('Failed to add game. API may not be available.');
+                // 刷新页面以显示假添加
+                loadGames();
+            });
+    }
+
+    // 编辑游戏（模拟）
+    function editGame(id) {
+        alert('Edit functionality will be implemented in a future update.');
+    }
+
+    // 删除游戏（模拟）
+    function deleteGame(id) {
+        if (confirm('Are you sure you want to delete this game? This action cannot be undone.')) {
+            alert('Delete functionality will be implemented in a future update.');
+        }
+    }
+</script>
+</body>
+</html>
