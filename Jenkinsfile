@@ -1,29 +1,39 @@
 pipeline {
     agent any
 
+    triggers {
+        githubPush()
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        skipDefaultCheckout(true)
+    }
+
     tools {
         maven 'maven-3.99'
         jdk 'java-21'
     }
 
     environment {
-        // Jenkins Credentials IDs - Ensure these IDs exist in Jenkins > Manage Jenkins > Credentials
-        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials'
-        SSH_CREDENTIALS_ID       = 'aws-ec2-id_rsa'
-        DB_CREDENTIALS_ID        = 'db-credentials'
-
-        // Repository and Host Configuration
-        DOCKER_IMAGE_NAME        = "jiyuli/owlsgame"
-        APP_HOST                 = "3.252.140.1"
-        APP_USER                 = "ec2-user"
-        DB_HOST                  = "10.0.1.5"        // IMPORTANT: Replace with your DB's private IP or RDS endpoint
-        DB_NAME                  = "owlsgame_db"
+        DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials' // Jenkins中的DockerHub凭据ID
+        DOCKER_IMAGE_NAME = "jiyuli/owlsgame"
+        SSH_CREDENTIALS_ID = 'aws-ec2-id_rsa' // Jenkins中的EC2 SSH私钥ID
+        APP_HOST = "3.252.140.1"
+        APP_USER = "ec2-user"
     }
 
     stages {
         stage('Checkout') {
+            when {
+                anyOf {
+                    branch 'master'
+                    expression { env.BRANCH_NAME == 'master' }
+                    expression { return true } // Fallback for manual builds
+                }
+            }
             steps {
-                git branch: 'Dev', url: 'https://github.com/JreeyL/OwlsGame.git'
+                git branch: 'master', url: 'https://github.com/JreeyL/OwlsGame.git'
             }
         }
 
@@ -34,6 +44,7 @@ pipeline {
             post {
                 always {
                     junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                    jacoco execPattern: '**/target/jacoco.exec'
                 }
             }
         }
@@ -48,8 +59,7 @@ pipeline {
 
         stage('Docker Build & Tag') {
             steps {
-                echo "Building and tagging image: ${DOCKER_IMAGE_NAME}"
-                // Tag with both build number and 'latest'
+                echo "Building and tagging image with name: ${DOCKER_IMAGE_NAME}"
                 bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
             }
         }
@@ -58,79 +68,76 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     echo "Logging in to Docker Hub as ${DOCKER_USER}..."
-                    bat """
-                    echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                    """
-
-                    echo "Pushing tag: ${env.BUILD_NUMBER}"
+                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
                     bat "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-
-                    echo "Pushing tag: latest"
                     bat "docker push ${DOCKER_IMAGE_NAME}:latest"
                 }
             }
         }
 
-        stage('Deploy to EC2') {
+        stage('Deploy to EC2 APP') {
             steps {
-                withCredentials([
-                    sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME'),
-                    usernamePassword(credentialsId: DB_CREDENTIALS_ID, usernameVariable: 'DB_USER', passwordVariable: 'DB_PASS')
-                ]) {
-                    script {
-                        // Fix SSH key permissions on Windows using Jenkins user
-                        bat """
-                        echo --- Fixing SSH key permissions ---
-                        icacls "%KEYFILE%" /inheritance:r
-                        icacls "%KEYFILE%" /grant:r "Everyone:(R)"
-                        icacls "%KEYFILE%" /grant:r "SYSTEM:(F)"
-                        """
-                        
-                        // Deploy to EC2 using safe variable interpolation
-                        bat '''
-                        echo --- Deploying to EC2 ---
-                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@''' + APP_HOST + ''' "docker pull ''' + DOCKER_IMAGE_NAME + ''':latest && docker stop owlsgame-app || true && docker rm owlsgame-app || true && docker run -d --name owlsgame-app -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod -e SPRING_DATASOURCE_URL='jdbc:mysql://''' + DB_HOST + ''':3306/''' + DB_NAME + '''?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC' -e SPRING_DATASOURCE_USERNAME=%DB_USER% -e SPRING_DATASOURCE_PASSWORD='%DB_PASS%' -e SPRING_JPA_DATABASE-PLATFORM=org.hibernate.dialect.MySQLDialect -e SPRING_JPA_HIBERNATE_DDL_AUTO=update --restart unless-stopped ''' + DOCKER_IMAGE_NAME + ''':latest"
-                        '''
-                    }
+                withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME')]) {
+                    bat """
+                    icacls %KEYFILE% /inheritance:r
+                    icacls %KEYFILE% /remove BUILTIN\\Users
+                    icacls %KEYFILE% /grant SYSTEM:R
+                    
+                    echo "=== Starting Database Container (if not already running) ==="
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker run -d --name owlsgame-db -e MYSQL_DATABASE=owlsgame_db -e MYSQL_ROOT_PASSWORD=RootRoot## --restart unless-stopped mysql:8 || echo 'Database container already exists'"
+                    
+                    echo "=== Waiting for database to be ready ==="
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "for i in {1..30}; do if docker exec owlsgame-db mysqladmin ping -h localhost -pRootRoot## --silent; then echo 'Database is ready'; break; else echo 'Waiting for database...'; sleep 2; fi; done"
+                    
+                    echo "=== Deploying Application Container ==="
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker pull ${DOCKER_IMAGE_NAME}:latest && docker stop owlsgame-app || true && docker rm owlsgame-app || true && docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql -e SPRING_PROFILES_ACTIVE=prod ${DOCKER_IMAGE_NAME}:latest"
+                    """
                 }
             }
         }
 
-        stage('Post-deploy Check') {
+        stage('Health Check') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: SSH_CREDENTIALS_ID, keyFileVariable: 'KEYFILE', usernameVariable: 'USERNAME')]) {
-                    script {
-                        // Fix SSH key permissions on Windows for post-deploy check
-                        bat """
-                        icacls "%KEYFILE%" /inheritance:r
-                        icacls "%KEYFILE%" /grant:r "Everyone:(R)"
-                        icacls "%KEYFILE%" /grant:r "SYSTEM:(F)"
-                        """
-                        
-                        bat '''
-                        REM Wait 15 seconds for the container to initialize.
-                        timeout /t 15 /nobreak >nul
-
-                        echo --- Checking container status on ''' + APP_HOST + ''' ---
-                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@''' + APP_HOST + ''' "docker ps --filter name=owlsgame-app"
-
-                        echo --- Showing last 100 lines of app logs ---
-                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %USERNAME%@''' + APP_HOST + ''' "docker logs --tail 100 owlsgame-app"
-                        '''
-                    }
+                    bat """
+                    icacls %KEYFILE% /inheritance:r
+                    icacls %KEYFILE% /remove BUILTIN\\Users
+                    icacls %KEYFILE% /grant SYSTEM:R
+                    
+                    echo "=== Waiting for application to start ==="
+                    timeout /t 30 /nobreak >nul
+                    
+                    echo "=== Checking container status ==="
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker ps --filter name=owlsgame"
+                    
+                    echo "=== Checking application logs ==="
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker logs --tail 50 owlsgame-app"
+                    
+                    echo "=== Testing application endpoint ==="
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "curl -f http://localhost:8080/ || echo 'Application health check failed'"
+                    """
                 }
+            }
+        }
+
+        stage('Report') {
+            steps {
+                archiveArtifacts artifacts: '**/target/*.war', fingerprint: true
+                publishHTML target: [
+                    allowMissing: false,
+                    reportDir: 'target/site/jacoco',
+                    reportFiles: 'index.html',
+                    reportName: 'JaCoCo Report'
+                ]
             }
         }
     }
 
     post {
         always {
-            echo "Pipeline finished. Logging out and cleaning up Jenkins agent..."
+            echo "Pipeline finished. Logging out and cleaning up..."
             bat 'docker logout'
             bat 'docker image prune -f'
-        }
-        failure {
-            echo 'Pipeline failed. Please check the console output for errors.'
         }
     }
 }
