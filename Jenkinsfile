@@ -16,7 +16,7 @@ pipeline {
         // 非敏感：DB 主机/数据库名（请改为你的私有IP或RDS endpoint）
         DB_HOST = "10.0.1.5"        // <-- 替换为你的 DB 私有 IP 或 RDS endpoint（不要用 'db'）
         DB_NAME = "owlsgame_db"
-        # 可在 Jenkins 全局环境变量或通过凭据管理设置 DB_HOST
+        // 可在 Jenkins 全局环境变量或通过凭据管理设置 DB_HOST
     }
 
     stages {
