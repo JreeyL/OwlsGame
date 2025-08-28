@@ -11,9 +11,4 @@ public class HomeController {
         // 返回视图名称，不包含扩展名
         return "Homepage";
     }
-
-    @GetMapping("/leaderboard")
-    public String showLeaderboard() {
-        return "leaderboard";
-    }
 }
