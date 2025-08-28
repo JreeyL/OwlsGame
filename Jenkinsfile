@@ -8,8 +8,10 @@ pipeline {
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        // Prevent concurrent builds to avoid multiple triggers
-        disableConcurrentBuilds()
+        // Prevent concurrent builds - use global lock
+        disableConcurrentBuilds(abortPrevious: true)
+        // Add timeout to prevent hanging builds
+        timeout(time: 30, unit: 'MINUTES')
     }
 
     tools {
@@ -26,15 +28,25 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            when {
-                anyOf {
-                    branch 'master'
-                    expression { env.BRANCH_NAME == 'master' }
+        stage('Branch Check') {
+            steps {
+                script {
+                    // Only allow master branch to proceed
+                    if (env.BRANCH_NAME != 'master' && env.BRANCH_NAME != null) {
+                        currentBuild.result = 'ABORTED'
+                        error("Pipeline only runs on master branch. Current branch: ${env.BRANCH_NAME}")
+                    }
+                    echo "Branch check passed. Running on master branch."
                 }
             }
+        }
+
+        stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/JreeyL/OwlsGame.git'
+                // Use lock to ensure only one build runs at a time
+                lock(resource: 'owlsgame-build-lock') {
+                    git branch: 'master', url: 'https://github.com/JreeyL/OwlsGame.git'
+                }
             }
         }
 
@@ -60,18 +72,29 @@ pipeline {
 
         stage('Docker Build & Tag') {
             steps {
-                echo "Building and tagging image with name: ${DOCKER_IMAGE_NAME}"
-                bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
+                // Use lock to prevent Docker conflicts
+                lock(resource: 'docker-build-lock') {
+                    echo "Building and tagging image with name: ${DOCKER_IMAGE_NAME}"
+                    script {
+                        // Clean up any existing build artifacts first
+                        bat "docker rmi ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} || echo 'No existing image to remove'"
+                        // Build with both build number and latest tags
+                        bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
+                    }
+                }
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    echo "Logging in to Docker Hub as ${DOCKER_USER}..."
-                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
-                    bat "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-                    bat "docker push ${DOCKER_IMAGE_NAME}:latest"
+                // Use lock to prevent Docker Hub conflicts
+                lock(resource: 'docker-push-lock') {
+                    withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        echo "Logging in to Docker Hub as ${DOCKER_USER}..."
+                        bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
+                        bat "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                        bat "docker push ${DOCKER_IMAGE_NAME}:latest"
+                    }
                 }
             }
         }
@@ -105,8 +128,32 @@ pipeline {
     post {
         always {
             echo "Pipeline finished. Logging out and cleaning up..."
-            bat 'docker logout'
-            bat 'docker image prune -f'
+            script {
+                // Safe Docker cleanup - only remove specific build images
+                try {
+                    bat 'docker logout'
+                    // Only remove the specific build image, not all dangling images
+                    bat "docker rmi ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} || echo 'Build image already removed'"
+                    // Use safer cleanup that won't hang
+                    bat 'docker system prune -f --filter "until=24h" || echo "Cleanup skipped"'
+                } catch (Exception e) {
+                    echo "Cleanup failed: ${e.getMessage()}, continuing..."
+                }
+            }
+        }
+        failure {
+            echo 'Build failed. Check logs for details.'
+        }
+        aborted {
+            echo 'Build was aborted.'
+            // Clean up any hanging Docker processes
+            script {
+                try {
+                    bat "docker stop \$(docker ps -q --filter ancestor=${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}) || echo 'No containers to stop'"
+                } catch (Exception e) {
+                    echo "Container cleanup failed: ${e.getMessage()}"
+                }
+            }
         }
     }
 }
