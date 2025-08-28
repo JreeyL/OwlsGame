@@ -109,7 +109,7 @@ pipeline {
                     icacls %KEYFILE% /inheritance:r
                     icacls %KEYFILE% /remove BUILTIN\\Users
                     icacls %KEYFILE% /grant SYSTEM:R
-                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker pull ${DOCKER_IMAGE_NAME}:latest && docker stop owlsgame-app || true && docker rm owlsgame-app || true && docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql ${DOCKER_IMAGE_NAME}:latest"
+                    ssh -i %KEYFILE% -o StrictHostKeyChecking=no %USERNAME%@${APP_HOST} "docker pull ${DOCKER_IMAGE_NAME}:latest && docker stop owlsgame-app || true && docker rm owlsgame-app || true && docker run -d --name owlsgame-app -p 8080:8080 --link owlsgame-db:mysql -e SPRING_PROFILES_ACTIVE=docker ${DOCKER_IMAGE_NAME}:latest"
                     """
                 }
             }
