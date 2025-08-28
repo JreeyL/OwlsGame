@@ -8,12 +8,12 @@ public class HomeController {
 
     @GetMapping({"/", "/home"})
     public String showHome() {
-        // 明确指定扩展名
-        return "Homepage.jsp"; // 或 "Homepage.html"
+        // 返回视图名称，不包含扩展名
+        return "Homepage";
     }
 
     @GetMapping("/leaderboard")
     public String showLeaderboard() {
-        return "leaderboard.jsp"; // 或 "leaderboard.html"
+        return "leaderboard";
     }
 }
