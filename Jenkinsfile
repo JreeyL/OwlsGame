@@ -70,12 +70,8 @@ pipeline {
         stage('Docker Build & Tag') {
             steps {
                 echo "Building and tagging image with name: ${DOCKER_IMAGE_NAME}"
-                script {
-                    // Clean up any existing build artifacts first
-                    bat "docker rmi ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} || echo 'No existing image to remove'"
-                    // Build with both build number and latest tags
-                    bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
-                }
+                // Build with both build number and latest tags
+                bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
             }
         }
 
@@ -120,13 +116,8 @@ pipeline {
         always {
             echo "Pipeline finished. Logging out and cleaning up..."
             script {
-                // Safe Docker cleanup - only remove specific build images
                 try {
-                    bat 'docker logout'
-                    // Only remove the specific build image, not all dangling images
-                    bat "docker rmi ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} || echo 'Build image already removed'"
-                    // Use safer cleanup that won't hang
-                    bat 'docker system prune -f --filter "until=24h" || echo "Cleanup skipped"'
+                    bat 'docker logout || echo "Docker logout failed"'
                 } catch (Exception e) {
                     echo "Cleanup failed: ${e.getMessage()}, continuing..."
                 }
@@ -137,14 +128,6 @@ pipeline {
         }
         aborted {
             echo 'Build was aborted.'
-            // Clean up any hanging Docker processes
-            script {
-                try {
-                    bat "docker stop \$(docker ps -q --filter ancestor=${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}) || echo 'No containers to stop'"
-                } catch (Exception e) {
-                    echo "Container cleanup failed: ${e.getMessage()}"
-                }
-            }
         }
     }
 }
