@@ -1,8 +1,9 @@
 package org.OwlsGame.backend.service;
 
-import org.OwlsGame.backend.models.Score;
 import java.util.List;
 import java.util.Optional;
+
+import org.OwlsGame.backend.models.Score;
 
 public interface ScoreService {
     Score saveScore(Score score);
@@ -14,6 +15,7 @@ public interface ScoreService {
 
     Optional<Score> getHighestScoreByUserAndGame(Integer userId, Integer gameId);
     List<Score> getTopNScoresByGame(Integer gameId, int n);
+    List<Score> getTopScoresByGame(String gameName, int n);
     Integer getTotalPlayTimeByUserAndGame(Integer userId, Integer gameId);
     List<Object[]> getTotalPlayTimeGroupByGame(Integer userId);
 }

@@ -1,14 +1,14 @@
 package org.OwlsGame.backend.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.OwlsGame.backend.dao.ScoreRepository;
 import org.OwlsGame.backend.models.Score;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -64,6 +64,12 @@ public class ScoreServiceImpl implements ScoreService {
     @Transactional(readOnly = true)
     public List<Score> getTopNScoresByGame(Integer gameId, int n) {
         return scoreRepository.findTopScoresByGameId(gameId, PageRequest.of(0, n));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Score> getTopScoresByGame(String gameName, int n) {
+        return scoreRepository.findTopScoresByGameName(gameName, PageRequest.of(0, n));
     }
 
     @Override
