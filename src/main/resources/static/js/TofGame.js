@@ -124,45 +124,12 @@ function endGame() {
             } else {
                 console.log("User not logged in for score saving");
                 finalScoreEl.innerHTML += "<br><small>Log in to save your score!</small>";
-
-                // 开发辅助：添加紧急保存按钮
-                finalScoreEl.innerHTML += `
-                    <br><button id="emergency-save" 
-                    style="margin-top:10px;padding:5px 10px;background:#ff9800;color:white;border:none;border-radius:4px;">
-                    Emergency Save (Dev)</button>`;
-
-                document.getElementById('emergency-save').addEventListener('click', function() {
-                    const manualEmail = prompt("Enter your email (jreeylee92@outlook.com):", "jreeylee92@outlook.com");
-                    if (manualEmail) {
-                        const userData = {
-                            email: manualEmail,
-                            userId: 1
-                        };
-                        saveScore(userData, score, playTime);
-                    }
-                });
             }
         })
         .catch(error => {
             console.error("Error checking session:", error);
             finalScoreEl.innerHTML += "<br><small>Error checking login status.</small>";
 
-            // 失败时也添加紧急按钮
-            finalScoreEl.innerHTML += `
-                <br><button id="emergency-save" 
-                style="margin-top:10px;padding:5px 10px;background:#ff9800;color:white;border:none;border-radius:4px;">
-                Emergency Save</button>`;
-
-            document.getElementById('emergency-save').addEventListener('click', function() {
-                const manualEmail = prompt("Enter your email (jreeylee92@outlook.com):", "jreeylee92@outlook.com");
-                if (manualEmail) {
-                    const userData = {
-                        email: manualEmail,
-                        userId: 1
-                    };
-                    saveScore(userData, score, playTime);
-                }
-            });
         });
 }
 
