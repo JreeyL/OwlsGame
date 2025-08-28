@@ -8,7 +8,7 @@ pipeline {
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        // Prevent concurrent builds - use global lock
+        // Prevent concurrent builds
         disableConcurrentBuilds(abortPrevious: true)
         // Add timeout to prevent hanging builds
         timeout(time: 30, unit: 'MINUTES')
@@ -43,10 +43,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                // Use lock to ensure only one build runs at a time
-                lock(resource: 'owlsgame-build-lock') {
-                    git branch: 'master', url: 'https://github.com/JreeyL/OwlsGame.git'
-                }
+                git branch: 'master', url: 'https://github.com/JreeyL/OwlsGame.git'
             }
         }
 
@@ -72,29 +69,23 @@ pipeline {
 
         stage('Docker Build & Tag') {
             steps {
-                // Use lock to prevent Docker conflicts
-                lock(resource: 'docker-build-lock') {
-                    echo "Building and tagging image with name: ${DOCKER_IMAGE_NAME}"
-                    script {
-                        // Clean up any existing build artifacts first
-                        bat "docker rmi ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} || echo 'No existing image to remove'"
-                        // Build with both build number and latest tags
-                        bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
-                    }
+                echo "Building and tagging image with name: ${DOCKER_IMAGE_NAME}"
+                script {
+                    // Clean up any existing build artifacts first
+                    bat "docker rmi ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} || echo 'No existing image to remove'"
+                    // Build with both build number and latest tags
+                    bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
                 }
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                // Use lock to prevent Docker Hub conflicts
-                lock(resource: 'docker-push-lock') {
-                    withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        echo "Logging in to Docker Hub as ${DOCKER_USER}..."
-                        bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
-                        bat "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
-                        bat "docker push ${DOCKER_IMAGE_NAME}:latest"
-                    }
+                withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    echo "Logging in to Docker Hub as ${DOCKER_USER}..."
+                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin"
+                    bat "docker push ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    bat "docker push ${DOCKER_IMAGE_NAME}:latest"
                 }
             }
         }
