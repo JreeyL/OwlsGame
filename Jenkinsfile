@@ -23,7 +23,7 @@ pipeline {
         DOCKERHUB_CREDENTIALS_ID = 'dockerhub-credentials' // Jenkins中的DockerHub凭据ID
         DOCKER_IMAGE_NAME = "jiyuli/owlsgame"
         SSH_CREDENTIALS_ID = 'aws-ec2-id_rsa' // Jenkins中的EC2 SSH私钥ID
-        APP_HOST = "3.252.140.105"
+        APP_HOST = "108.129.255.233"
         APP_USER = "ec2-user"
     }
 
