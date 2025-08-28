@@ -50,9 +50,9 @@ public class WebConfig implements WebMvcConfigurer {
     public ViewResolver jspViewResolver() {
         InternalResourceViewResolver resolver = new InternalResourceViewResolver();
         resolver.setPrefix("/WEB-INF/views/");
-        resolver.setSuffix("");
+        resolver.setSuffix(".jsp");
         resolver.setViewClass(JstlView.class);
-        resolver.setOrder(1); // 优先级较低
+        resolver.setOrder(0); // 优先级较高
         return resolver;
     }
 
@@ -61,9 +61,9 @@ public class WebConfig implements WebMvcConfigurer {
     public ViewResolver htmlViewResolver() {
         UrlBasedViewResolver resolver = new UrlBasedViewResolver();
         resolver.setPrefix("/WEB-INF/views/");
-        resolver.setSuffix("");
+        resolver.setSuffix(".html");
         resolver.setViewClass(InternalResourceView.class); // 使用InternalResourceView
-        resolver.setOrder(0); // 优先级较高
+        resolver.setOrder(1); // 优先级较低
         return resolver;
     }
 
