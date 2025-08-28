@@ -6,7 +6,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -29,20 +28,20 @@ class HomeControllerTest {
     void showHome_ShouldReturnHomepage() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("Homepage.jsp"));
+                .andExpect(view().name("Homepage"));
     }
 
     @Test
     void showHome_WithHomeURL_ShouldReturnHomepage() throws Exception {
         mockMvc.perform(get("/home"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("Homepage.jsp"));
+                .andExpect(view().name("Homepage"));
     }
 
     @Test
     void showLeaderboard_ShouldReturnLeaderboardPage() throws Exception {
         mockMvc.perform(get("/leaderboard"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("leaderboard.jsp"));
+                .andExpect(view().name("leaderboard"));
     }
 }
