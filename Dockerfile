@@ -5,7 +5,7 @@ FROM tomcat:10.1-jdk21-temurin-jammy
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # 将WAR 文件复制到 Tomcat 的 webapps 目录下，并重命名为 ROOT.war
-COPY target/*.war /usr/local/tomcat/webapps/ROOT.war
+COPY target/OwlsGame-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
 
 # 声明容器内部实际监听的端口，这是 Tomcat 的默认端口
 EXPOSE 8080

@@ -70,8 +70,24 @@ pipeline {
         stage('Docker Build & Tag') {
             steps {
                 echo "Building and tagging image with name: ${DOCKER_IMAGE_NAME}"
-                // Build with both build number and latest tags
-                bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
+                script {
+                    // Verify WAR file exists before building
+                    bat "dir target\\*.war"
+                    bat "if not exist target\\OwlsGame-1.0-SNAPSHOT.war (echo WAR file not found && exit 1)"
+                    
+                    try {
+                        // Try normal build first with shorter timeout
+                        timeout(time: 5, unit: 'MINUTES') {
+                            bat "docker build -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
+                        }
+                    } catch (Exception e) {
+                        echo "Normal build failed or timed out: ${e.getMessage()}"
+                        // Fallback: no-cache build
+                        timeout(time: 8, unit: 'MINUTES') {
+                            bat "docker build --no-cache -t ${DOCKER_IMAGE_NAME}:${env.BUILD_NUMBER} -t ${DOCKER_IMAGE_NAME}:latest ."
+                        }
+                    }
+                }
             }
         }
 
